@@ -1,4 +1,0 @@
-window.addEventListener('scroll', () => {
-	const iframe = document.querySelector('#unit-iframe');
-	iframe.contentWindow.postMessage({ type: 'scroll', scrollTop: window.scrollY }, '*');
-});

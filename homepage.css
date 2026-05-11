@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    padding-top: 80px;
     background-color: black;
     color: white;
     font-family: Arial, sans-serif;
@@ -7,14 +8,35 @@ body {
 
 /* navbar */
 .navbar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    z-index: 1000;
+
+    background-color: black;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding: 15px 30px;
+
+    box-sizing: border-box;
 }
 
 /* צד שמאל */
 .left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* צד ימין */
+.right {
     display: flex;
     align-items: center;
 }
@@ -42,23 +64,19 @@ body {
     color: gray;
 }
 
-/* צד ימין */
-.right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
+/* אייקונים */
+.icon {
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.search {
-    padding: 6px 10px;
-    border-radius: 4px;
-    border: none;
-    outline: none;
-}
 .icon:hover {
     color: gray;
     transform: scale(1.1);
 }
+
 .bell {
     padding: 6px;
     border-radius: 50%;
@@ -68,16 +86,136 @@ body {
     background-color: rgba(255,255,255,0.1);
 }
 
-.icon {
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
+/* תמונת פרופיל */
 .profile {
     width: 35px;
     height: 35px;
     border-radius: 50%;
     cursor: pointer;
+}
+
+/* באנר */
+.banner {
+    height: 500px;
+
+    background-image: url("images/poker.jpg");
+
+    background-size: cover;
+    background-position: center;
+
+    display: flex;
+    align-items: center;
+
+    padding: 50px;
+
+    color: white;
+}
+
+.banner-content {
+    max-width: 500px;
+}
+
+.banner h1 {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.banner p {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+/* כפתורים בבאנר */
+.play-btn,
+.info-btn {
+    padding: 10px 20px;
+    margin-right: 10px;
+
+    border: none;
+    border-radius: 5px;
+
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.play-btn {
+    background: white;
+    color: black;
+}
+
+.info-btn {
+    background: rgba(109,109,110,0.7);
+    color: white;
+}
+
+/* פיד */
+#feedContainer {
+    display: flex;
+
+    overflow-x: auto;
+
+    gap: 15px;
+
+    padding: 20px;
+}
+
+/* הסתרת scrollbar */
+#feedContainer::-webkit-scrollbar {
+    display: none;
+}
+
+/* כרטיס סרט */
+.post {
+    min-width: 220px;
+
+    background: #111;
+
+    color: white;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    flex-shrink: 0;
+
+    transition: transform 0.3s;
+}
+
+.post:hover {
+    transform: scale(1.05);
+}
+
+/* תמונת סרט */
+.card-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+/* תוכן כרטיס */
+.post h3,
+.post p {
+    padding: 0 10px;
+}
+
+/* כפתור לייק */
+.likeBtn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+
+    padding: 10px;
+
+    font-size: 18px;
+
+    transition: 0.2s;
+}
+
+.likeBtn:hover {
+    transform: scale(1.1);
+}
+
+.likeBtn.liked {
+    color: red;
 }
