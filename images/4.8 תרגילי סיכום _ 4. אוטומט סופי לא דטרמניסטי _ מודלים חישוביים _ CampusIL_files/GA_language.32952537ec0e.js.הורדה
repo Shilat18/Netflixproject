@@ -1,0 +1,7 @@
+// Google analytics push language events
+var select_lang = document.getElementById("settings-language-value");
+select_lang.addEventListener("change", function(){
+    var selectValue = this.value ;
+    dataLayer.push({'event': 'language', 'type': selectValue});
+    sessionStorage.setItem("language_Event", selectValue)
+});

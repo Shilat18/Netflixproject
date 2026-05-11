@@ -1,0 +1,59 @@
+function reveal(scrollTop) {
+  var reveals = document.querySelectorAll(".reveal");
+
+  for (var i = 0; i < reveals.length; i++) {
+    var windowHeight = scrollTop;
+    var elementTop = reveals[i].getBoundingClientRect().top;
+    var elementVisible = 150;
+
+    if (elementTop < windowHeight - elementVisible) {
+      reveals[i].classList.add("active");
+    } else {
+      reveals[i].classList.remove("active");
+    }
+  }
+}
+  
+function revealLong(scrollTop) {
+  var revealsLong = document.querySelectorAll(".revealLong");
+
+  for (var i = 0; i < revealsLong.length; i++) {
+    var windowHeightLong = scrollTop;
+    var elementTopLong = revealsLong[i].getBoundingClientRect().top;
+    var elementVisibleLong = 150;
+
+    if (elementTopLong < windowHeightLong - elementVisibleLong) {
+      revealsLong[i].classList.add("active");
+    } else {
+      revealsLong[i].classList.remove("active");
+    }
+  }
+}
+
+
+function revealShort(scrollTop) {
+  var revealsShort = document.querySelectorAll(".revealShort");
+
+  for (var i = 0; i < revealsShort.length; i++) {
+    var windowHeightShort = scrollTop;
+    var elementTopShort = revealsShort[i].getBoundingClientRect().top;
+    var elementVisibleShort = 150;
+
+    if (elementTopShort < windowHeightShort - elementVisibleShort) {
+      revealsShort[i].classList.add("active");
+    } else {
+      revealsShort[i].classList.remove("active");
+    }
+  }
+}
+
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'scroll') {
+    let _scrollTop = event.data.scrollTop + 1800;
+
+    reveal(_scrollTop);
+    revealLong(_scrollTop);
+    revealShort(_scrollTop);
+    //console.log('Parent scroll position:', event.data.scrollTop);
+  }
+});
