@@ -1,0 +1,63 @@
+//Afik Ifrach - 314940081 , Shilat Maymon - 213249618//
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>home page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/homepage.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <div class="right">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo">
+            <ul class="תפריט">
+                <li>דף הבית</li>
+                <li>סדרות</li>
+                <li>סרטים</li>
+                <li>משחקים</li>
+                <li>חדשים ופופולריים</li>
+                <li>הרשימה שלי</li>
+                <li>דפדוף לפי שפות</li>
+            </ul>
+        </div>
+
+        <div class="left">
+            <i class="fa-solid fa-magnifying-glass icon"></i>
+            <i class="fa-regular fa-bell icon bell"></i>
+            <img src="/images/ester.jpg" class="profile">
+            <a href="/logout" style="color: white; margin-right: 15px; text-decoration: none; font-weight: bold;">התנתק</a>
+        </div>
+    </header>
+
+    <section class="banner">
+        <div class="banner-content">
+            <h1><%= movies[0].title %></h1>
+            <p><%= movies[0].description %></p>
+            <button class="play-btn">▶ Play</button>
+            <button class="info-btn">More Info</button>
+        </div>
+    </section>
+
+    <input id="searchInput" placeholder="חיפוש בפיד..." />
+
+    <div id="feedContainer">
+        <% movies.forEach(function(movie) { %>
+            <div class="movie-card">
+                <h3><%= movie.title %></h3>
+                <p><%= movie.description %></p>
+            </div>
+        <% }); %>
+    </div>
+
+    <button onclick="sortAZ()">מיון A-Z</button>
+
+    <script src="/script.js"></script>
+
+</body>
+
+</html>
