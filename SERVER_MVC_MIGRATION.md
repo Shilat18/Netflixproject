@@ -1,52 +1,57 @@
-# Server Migration Steps: Current Architecture to MVC
+# Server MVC Migration
 
 ## Goal
 
-Move the current Express server from one large `server.js` file into a clean MVC structure.
+Move the project from a single-server style into a clear MVC architecture.
 
 MVC means:
 
 ```text
-Model      -> handles data
-View       -> displays pages
-Controller -> handles request logic
+Model      -> data and database logic
+View       -> EJS pages
+Controller -> request logic
+Route      -> URL definitions
 ```
 
-## Current Architecture
+## Previous Architecture
 
-The current server is built mostly inside `server.js`.
+At the beginning, the server logic was concentrated around `server.js`.
 
-It currently handles:
+It handled too many responsibilities:
 
 1. Express setup.
-2. EJS view setup.
+2. Session setup.
 3. Static files.
-4. Sessions.
-5. Login logic.
-6. Profile data.
-7. Movie data.
-8. All routes.
-9. Server startup.
+4. Login logic.
+5. Profile logic.
+6. Movie data.
+7. Routes.
+8. Server startup.
 
-This works, but the file becomes harder to maintain as the project grows.
+This worked for a small project, but it became harder to expand.
 
-## Target MVC Structure
+## Final Architecture
 
 ```text
 server.js
 app.js
+config/
+  db.js
 
 routes/
   authRoutes.js
   profileRoutes.js
   homeRoutes.js
+  adminRoutes.js
 
 controllers/
   authController.js
   profileController.js
   homeController.js
+  adminController.js
 
 models/
+  userModel.js
   personaModel.js
   movieModel.js
 
@@ -61,7 +66,7 @@ public/
 
 ### Step 1: Create MVC folders
 
-Create these folders:
+Created the main folders:
 
 ```text
 routes/
@@ -70,193 +75,216 @@ models/
 middleware/
 ```
 
-Keep `views/` and `public/` as they are.
+Each folder has one clear responsibility.
 
-### Step 2: Create `app.js`
+### Step 2: Move Express setup to `app.js`
 
-Move the Express configuration from `server.js` into `app.js`.
+`app.js` now configures:
 
-This includes:
-
-1. View engine setup.
+1. EJS.
 2. Static files.
-3. Body parsing.
-4. Session setup.
+3. Request body parsing.
+4. Sessions.
 5. Route registration.
 
 ### Step 3: Keep `server.js` small
 
-Leave only the server startup code in `server.js`.
+`server.js` now only:
 
-It should:
+1. Loads environment variables.
+2. Connects to MongoDB.
+3. Starts the server.
 
-1. Import `app`.
-2. Define the port.
-3. Run `app.listen()`.
+### Step 4: Add MongoDB connection
 
-### Step 4: Move login middleware
+Created:
 
-Move `requireLogin` into:
+```text
+config/db.js
+```
+
+The app tries to connect to MongoDB.
+If MongoDB is not available, it uses in-memory fallback data.
+
+### Step 5: Move authentication logic
+
+Created:
+
+```text
+routes/authRoutes.js
+controllers/authController.js
+models/userModel.js
+```
+
+This includes:
+
+1. Login.
+2. Signup.
+3. Logout.
+4. Password hashing.
+5. Safe session user data.
+
+### Step 6: Move profile logic
+
+Created:
+
+```text
+routes/profileRoutes.js
+controllers/profileController.js
+models/personaModel.js
+```
+
+This includes:
+
+1. Showing profiles.
+2. Selecting a profile.
+3. MongoDB profile data.
+4. Fallback profiles.
+
+### Step 7: Move homepage and content logic
+
+Created:
+
+```text
+routes/homeRoutes.js
+controllers/homeController.js
+models/movieModel.js
+```
+
+This includes:
+
+1. Homepage data.
+2. Content details.
+3. Continue Watching.
+4. Recommendations.
+5. Popular titles.
+6. Categories.
+
+### Step 8: Add middleware
+
+Created:
 
 ```text
 middleware/authMiddleware.js
 ```
 
-Export it and use it on protected routes.
-
-### Step 5: Create the persona model
-
-Move the `personas` array into:
+This protects private routes with:
 
 ```text
-models/personaModel.js
+requireLogin
+requireAdmin
 ```
 
-Add these functions:
+### Step 9: Add admin area
+
+Created:
 
 ```text
-getAllPersonas()
-addPersona(name)
+routes/adminRoutes.js
+controllers/adminController.js
+views/admin-users.ejs
+views/admin-content.ejs
 ```
 
-### Step 6: Create the movie model
+Admin can:
 
-Move the `moviesFeed` array into:
+1. View users.
+2. View content.
+3. Add content.
+4. Edit content.
+5. Delete content.
 
-```text
-models/movieModel.js
-```
+### Step 10: Add reviews
 
-Add this function:
-
-```text
-getAllMovies()
-```
-
-### Step 7: Create the auth controller
-
-Create:
-
-```text
-controllers/authController.js
-```
-
-Move the logic for:
-
-1. Showing the login page.
-2. Handling login.
-3. Handling logout.
-
-### Step 8: Create the profile controller
-
-Create:
-
-```text
-controllers/profileController.js
-```
-
-Move the logic for:
-
-1. Showing profiles.
-2. Adding a profile.
-
-Use `personaModel` inside this controller.
-
-### Step 9: Create the home controller
-
-Create:
+Added review logic to:
 
 ```text
 controllers/homeController.js
+models/movieModel.js
+views/content-details.ejs
 ```
 
-Move the homepage logic into this file.
+Users can add a rating and short review to a content page.
 
-Use `movieModel` inside this controller.
+### Step 11: Add mood recommendations
 
-### Step 10: Create auth routes
-
-Create:
+Added mood data and UI to:
 
 ```text
-routes/authRoutes.js
+models/movieModel.js
+views/homepage.ejs
+public/script.js
+public/homepage.css
 ```
 
-Add routes for:
+Users can choose a mood and see matching content.
 
-1. `GET /`
-2. `POST /login`
-3. `GET /logout`
+### Step 12: Add My List
 
-Connect them to `authController`.
-
-### Step 11: Create profile routes
-
-Create:
+Added user saved-list logic to:
 
 ```text
-routes/profileRoutes.js
-```
-
-Add routes for:
-
-1. `GET /profiles`
-2. `POST /profiles/add`
-
-Protect both routes with `requireLogin`.
-
-### Step 12: Create home routes
-
-Create:
-
-```text
+models/userModel.js
+controllers/homeController.js
 routes/homeRoutes.js
+views/my-list.ejs
 ```
 
-Add route:
+Users can save and remove titles from their personal list.
+
+### Step 13: Update views
+
+The EJS pages now receive data from controllers instead of hardcoded server logic.
+
+Main views:
 
 ```text
-GET /homepage
+netflix.ejs
+signup.ejs
+profiles.ejs
+homepage.ejs
+content-details.ejs
+my-list.ejs
+admin-users.ejs
+admin-content.ejs
 ```
 
-Protect it with `requireLogin`.
+### Step 14: Test the full flow
 
-### Step 13: Register routes in `app.js`
-
-Import all route files into `app.js`.
-
-Register them with:
-
-```text
-app.use(...)
-```
-
-### Step 14: Test the server
-
-Run the project and test:
+Tested these routes:
 
 1. `/`
 2. `/login`
-3. `/profiles`
-4. `/profiles/add`
+3. `/signup`
+4. `/profiles`
 5. `/homepage`
-6. `/logout`
+6. `/content/:id`
+7. `/content/:id/reviews`
+8. `/my-list`
+9. `/admin/users`
+10. `/admin/content`
+11. `/logout`
 
-### Step 15: Clean old code
+### Step 15: Clean server responsibilities
 
-Remove route logic, data arrays, and middleware from `server.js`.
+The final structure separates the app into small files.
 
-Make sure each part now lives in the correct MVC file.
+Each file has a focused job:
+
+1. Routes define URLs.
+2. Controllers handle requests.
+3. Models manage data.
+4. Views render HTML.
+5. Middleware protects private pages.
+6. `server.js` starts the app.
 
 ## Final Result
 
-After the migration:
+The project is now easier to:
 
-1. `server.js` starts the server.
-2. `app.js` configures the app.
-3. Routes define URLs.
-4. Controllers handle logic.
-5. Models handle data.
-6. Views display pages.
-
-The project will be easier to read, test, and expand.
+1. Read.
+2. Debug.
+3. Present.
+4. Expand with new features.
+5. Connect to MongoDB.
+6. Run even when MongoDB is unavailable.
