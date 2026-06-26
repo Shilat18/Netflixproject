@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watching <%= movie.title %></title>
+    <link rel="stylesheet" href="/homepage.css">
+</head>
+
+<body class="watch-body">
+    <header class="watch-header">
+        <a href="/homepage" class="nav-link">Home</a>
+        <a href="/content/<%= movie.id %>" class="nav-link">Details</a>
+        <a href="/logout" class="nav-link">Logout</a>
+    </header>
+
+    <main class="watch-page">
+        <section class="watch-copy">
+            <p class="movie-meta"><%= movie.category %> | <%= movie.year %> | Rating <%= movie.rating %></p>
+            <h1><%= movie.title %></h1>
+            <p><%= movie.description %></p>
+        </section>
+
+        <!-- Short demo video that simulates playing the selected content. -->
+        <video class="watch-player" controls autoplay poster="/images/<%= movie.image %>">
+            <source src="<%= movie.videoUrl %>" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </main>
+</body>
+
+</html>

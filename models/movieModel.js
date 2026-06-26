@@ -57,6 +57,11 @@ const contentSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    videoUrl: {
+        type: String,
+        default: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        trim: true
+    },
     views: {
         type: Number,
         default: 0
@@ -85,6 +90,9 @@ const contentSchema = new mongoose.Schema({
 
 const Content = mongoose.models.Content || mongoose.model('Content', contentSchema);
 
+// Demo playback URL used when a movie does not have a custom video yet.
+const DEFAULT_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+
 // Temporary content is used only when MongoDB is not available.
 const memoryMovies = [
     {
@@ -95,6 +103,7 @@ const memoryMovies = [
         year: 2024,
         rating: 4.6,
         image: 'poker.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 940,
         progress: 68,
         tags: ['crime', 'thriller'],
@@ -112,6 +121,7 @@ const memoryMovies = [
         year: 2016,
         rating: 4.8,
         image: 'strangerP.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 1800,
         progress: 35,
         tags: ['sci-fi', 'mystery'],
@@ -128,6 +138,7 @@ const memoryMovies = [
         year: 2022,
         rating: 4.5,
         image: 'wednesdayP.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 1650,
         progress: 0,
         tags: ['fantasy', 'mystery'],
@@ -144,6 +155,7 @@ const memoryMovies = [
         year: 2021,
         rating: 4.2,
         image: 'ginny-georgia.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 760,
         progress: 22,
         tags: ['drama', 'family'],
@@ -160,6 +172,7 @@ const memoryMovies = [
         year: 2020,
         rating: 4.4,
         image: 'bridgertonP.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 1300,
         progress: 0,
         tags: ['drama', 'romance'],
@@ -176,6 +189,7 @@ const memoryMovies = [
         year: 2020,
         rating: 4.0,
         image: 'emilyinparis.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 690,
         progress: 0,
         tags: ['comedy', 'romance'],
@@ -192,6 +206,7 @@ const memoryMovies = [
         year: 2018,
         rating: 3.9,
         image: 'kissing.jpg',
+        videoUrl: DEFAULT_VIDEO_URL,
         views: 820,
         progress: 12,
         tags: ['romance', 'teen'],
@@ -236,6 +251,7 @@ function toMongoSeed(movie) {
         year: movie.year,
         rating: movie.rating,
         image: movie.image,
+        videoUrl: movie.videoUrl || DEFAULT_VIDEO_URL,
         views: movie.views,
         progress: movie.progress,
         tags: movie.tags,
@@ -252,6 +268,7 @@ function normalizeContentInput(data) {
         year: Number(data.year),
         rating: Number(data.rating),
         image: (data.image || 'default-avatar.png').trim(),
+        videoUrl: (data.videoUrl || DEFAULT_VIDEO_URL).trim(),
         views: Number(data.views) || 0,
         progress: Number(data.progress) || 0,
         tags: splitList(data.tags),
@@ -341,6 +358,7 @@ function getSafeMovie(movie) {
         year: rawMovie.year,
         rating: rawMovie.rating,
         image: rawMovie.image,
+        videoUrl: rawMovie.videoUrl || DEFAULT_VIDEO_URL,
         views: rawMovie.views,
         progress: rawMovie.progress,
         tags: rawMovie.tags || [],

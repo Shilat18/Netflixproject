@@ -72,6 +72,24 @@ async function showContentDetails(req, res) {
     }
 }
 
+async function showWatchPage(req, res) {
+    try {
+        const movie = await movieModel.getMovieById(req.params.id);
+
+        if (!movie) {
+            return res.status(404).send('Content not found');
+        }
+
+        res.render('watch', {
+            movie,
+            currentUser: req.session.user
+        });
+    } catch (err) {
+        console.error('Watch page error:', err.message);
+        res.status(500).send('Could not load video');
+    }
+}
+
 async function addMovieReview(req, res) {
     try {
         // Use the logged-in user name as the review author.
@@ -137,6 +155,7 @@ module.exports = {
     addMovieReview,
     showHomepage,
     showContentDetails,
+    showWatchPage,
     showMyList,
     toggleMyList
 };

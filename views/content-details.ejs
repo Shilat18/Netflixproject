@@ -30,7 +30,7 @@
             <p><%= movie.description %></p>
 
             <div class="quick-actions">
-                <button class="play-btn">Play</button>
+                <a href="/watch/<%= movie.id %>" class="play-btn">Play</a>
                 <a href="#addReview" class="info-btn">Add Rating</a>
                 <form class="inline-form" action="/my-list/<%= movie.id %>/toggle" method="POST">
                     <input type="hidden" name="redirectTo" value="/content/<%= movie.id %>">

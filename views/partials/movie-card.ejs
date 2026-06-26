@@ -1,5 +1,5 @@
 <article class="feed-card" data-title="<%= movie.title.toLowerCase() %>" data-moods="<%= (movie.moods || []).join(' ') %>">
-    <a href="/content/<%= movie.id %>">
+    <a href="/watch/<%= movie.id %>">
         <img src="/images/<%= movie.image %>" class="card-img" alt="<%= movie.title %>">
     </a>
 
@@ -15,6 +15,7 @@
         <% } %>
 
         <div class="card-actions">
+            <a href="/watch/<%= movie.id %>">Play</a>
             <a href="/content/<%= movie.id %>">Details</a>
             <a href="/content/<%= movie.id %>#reviews">Reviews</a>
             <span><%= movie.rating %>/5</span>

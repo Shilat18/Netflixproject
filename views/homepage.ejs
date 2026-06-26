@@ -42,7 +42,7 @@
             <p class="movie-meta"><%= feed.hero.category %> | <%= feed.hero.year %> | Rating <%= feed.hero.rating %></p>
             <h1><%= feed.hero.title %></h1>
             <p><%= feed.hero.description %></p>
-            <a href="/content/<%= feed.hero.id %>" class="play-btn">Play</a>
+            <a href="/watch/<%= feed.hero.id %>" class="play-btn">Play</a>
             <a href="/content/<%= feed.hero.id %>" class="info-btn">More Info</a>
             <form class="inline-form" action="/my-list/<%= feed.hero.id %>/toggle" method="POST">
                 <input type="hidden" name="redirectTo" value="/homepage">
