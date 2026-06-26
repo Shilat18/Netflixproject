@@ -40,7 +40,9 @@ async function showHomepage(req, res) {
             pageTitle: 'Home Page - Netflix',
             movies,
             feed,
-            currentUser: req.session.user
+            currentUser: req.session.user,
+            // Show users how many titles are saved in My List.
+            myListCount: myList.length
         });
     } catch (err) {
         console.error('Homepage error:', err.message);

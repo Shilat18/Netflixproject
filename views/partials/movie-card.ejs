@@ -22,7 +22,7 @@
 
         <form class="card-list-form" action="/my-list/<%= movie.id %>/toggle" method="POST">
             <input type="hidden" name="redirectTo" value="<%= typeof returnTo !== 'undefined' ? returnTo : '/homepage' %>">
-            <button type="submit"><%= movie.isInMyList ? 'Remove from My List' : '+ My List' %></button>
+            <button type="submit"><%= movie.isInMyList ? 'Saved in My List' : 'Add to My List' %></button>
         </form>
     </div>
 </article>

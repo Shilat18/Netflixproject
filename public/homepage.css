@@ -188,6 +188,39 @@ body {
     margin-bottom: 38px;
 }
 
+.mood-feature {
+    padding: 22px;
+    background: #111;
+    border: 1px solid #2b2b2b;
+    border-radius: 8px;
+}
+
+.mood-feature-copy {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 16px;
+}
+
+.mood-feature-copy p {
+    margin: 0;
+    color: #e50914;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.mood-feature-copy h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.mood-feature-copy span {
+    color: #aaa;
+    font-size: 14px;
+}
+
 .mood-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -224,6 +257,10 @@ body {
 
 .mood-results {
     min-height: 344px;
+}
+
+.mood-empty {
+    margin-top: 12px;
 }
 
 .feed-row {

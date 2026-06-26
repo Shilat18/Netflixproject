@@ -21,7 +21,7 @@
                 <li>Series</li>
                 <li>Movies</li>
                 <li>New & Popular</li>
-                <li><a href="/my-list">My List</a></li>
+                <li><a href="/my-list">My List (<%= typeof myListCount !== 'undefined' ? myListCount : 0 %>)</a></li>
             </ul>
         </div>
 
@@ -46,7 +46,7 @@
             <a href="/content/<%= feed.hero.id %>" class="info-btn">More Info</a>
             <form class="inline-form" action="/my-list/<%= feed.hero.id %>/toggle" method="POST">
                 <input type="hidden" name="redirectTo" value="/homepage">
-                <button type="submit" class="info-btn"><%= feed.hero.isInMyList ? 'Remove from My List' : '+ My List' %></button>
+                <button type="submit" class="info-btn"><%= feed.hero.isInMyList ? 'Saved in My List' : 'Add to My List' %></button>
             </form>
         </div>
     </section>
@@ -57,8 +57,10 @@
             <button type="button" onclick="sortAZ()">Sort A-Z</button>
         </section>
 
-        <section class="mood-picker" aria-labelledby="moodTitle">
-            <div class="row-title">
+        <!-- Mood picker is the custom recommendation feature. -->
+        <section class="mood-picker mood-feature" aria-labelledby="moodTitle">
+            <div class="mood-feature-copy">
+                <p>Special feature</p>
                 <h2 id="moodTitle">What to watch by mood</h2>
                 <span id="moodResultText">Choose your mood</span>
             </div>
@@ -81,6 +83,13 @@
                     <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
                 <% }); %>
             </div>
+
+            <% if (!moodMovies.length) { %>
+                <div class="empty-state mood-empty">
+                    <h2>No mood matches yet</h2>
+                    <p>Add moods to movies in the content model to show personalized mood recommendations.</p>
+                </div>
+            <% } %>
         </section>
 
         <section class="feed-row">

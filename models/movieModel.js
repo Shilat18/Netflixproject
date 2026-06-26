@@ -211,6 +211,15 @@ const moodOptions = [
     { id: 'thoughtful', emoji: '🤯', label: 'Makes me think' }
 ];
 
+const moodRules = {
+    Thriller: ['suspense'],
+    'Sci-Fi': ['suspense', 'thoughtful'],
+    Fantasy: ['funny', 'suspense'],
+    Drama: ['cry', 'thoughtful'],
+    Comedy: ['calm', 'funny'],
+    Romance: ['calm', 'romantic']
+};
+
 let checkedDefaultMongoContent = false;
 let nextMemoryMovieId = Math.max(...memoryMovies.map((movie) => movie.id)) + 1;
 
@@ -293,6 +302,30 @@ function calculateAverageRating(reviews, fallbackRating) {
     return Number((totalRating / reviews.length).toFixed(1));
 }
 
+// Infer moods for older MongoDB content that was saved before the mood feature.
+function getMovieMoods(rawMovie) {
+    if (Array.isArray(rawMovie.moods) && rawMovie.moods.length > 0) {
+        return rawMovie.moods;
+    }
+
+    const tags = rawMovie.tags || [];
+    const inferredMoods = new Set(moodRules[rawMovie.category] || []);
+
+    if (tags.includes('romance')) {
+        inferredMoods.add('romantic');
+    }
+
+    if (tags.includes('mystery') || tags.includes('thriller')) {
+        inferredMoods.add('suspense');
+    }
+
+    if (tags.includes('comedy')) {
+        inferredMoods.add('funny');
+    }
+
+    return Array.from(inferredMoods);
+}
+
 function getSafeMovie(movie) {
     if (!movie) {
         return null;
@@ -311,7 +344,7 @@ function getSafeMovie(movie) {
         views: rawMovie.views,
         progress: rawMovie.progress,
         tags: rawMovie.tags || [],
-        moods: rawMovie.moods || [],
+        moods: getMovieMoods(rawMovie),
         reviews: rawMovie.reviews || []
     };
 }
