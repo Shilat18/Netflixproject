@@ -1,4 +1,4 @@
-<article class="feed-card" data-title="<%= movie.title.toLowerCase() %>">
+<article class="feed-card" data-title="<%= movie.title.toLowerCase() %>" data-moods="<%= (movie.moods || []).join(' ') %>">
     <a href="/content/<%= movie.id %>">
         <img src="/images/<%= movie.image %>" class="card-img" alt="<%= movie.title %>">
     </a>

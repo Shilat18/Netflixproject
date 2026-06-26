@@ -51,6 +51,32 @@
             <button type="button" onclick="sortAZ()">Sort A-Z</button>
         </section>
 
+        <section class="mood-picker" aria-labelledby="moodTitle">
+            <div class="row-title">
+                <h2 id="moodTitle">What to watch by mood</h2>
+                <span id="moodResultText">Choose your mood</span>
+            </div>
+
+            <div class="mood-buttons" role="list" aria-label="Mood choices">
+                <% feed.moods.forEach(function(mood, index) { %>
+                    <button
+                        type="button"
+                        class="mood-btn <%= index === 0 ? 'active' : '' %>"
+                        data-mood="<%= mood.id %>"
+                        aria-pressed="<%= index === 0 ? 'true' : 'false' %>">
+                        <span><%= mood.emoji %></span>
+                        <%= mood.label %>
+                    </button>
+                <% }); %>
+            </div>
+
+            <div class="movie-row mood-results" id="moodResults">
+                <% feed.moodMovies.forEach(function(movie) { %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                <% }); %>
+            </div>
+        </section>
+
         <section class="feed-row">
             <div class="row-title">
                 <h2>Continue Watching</h2>

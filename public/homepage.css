@@ -171,6 +171,48 @@ body {
     font-size: 15px;
 }
 
+.mood-picker {
+    margin-bottom: 38px;
+}
+
+.mood-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.mood-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    background: #141414;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.mood-btn:hover,
+.mood-btn.active {
+    background: #e50914;
+    border-color: #e50914;
+    transform: translateY(-1px);
+}
+
+.mood-btn span {
+    font-size: 19px;
+    line-height: 1;
+}
+
+.mood-results {
+    min-height: 344px;
+}
+
 .feed-row {
     margin-bottom: 36px;
 }
@@ -364,6 +406,16 @@ body {
     .feed-tools {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .mood-buttons {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+
+    .mood-btn {
+        white-space: nowrap;
     }
 
     .details-page {

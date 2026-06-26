@@ -50,4 +50,51 @@ function sortAZ() {
     });
 }
 
+function setupMoodPicker() {
+    const buttons = document.querySelectorAll(".mood-btn");
+    const resultText = document.getElementById("moodResultText");
+    const moodCards = document.querySelectorAll("#moodResults .feed-card");
+
+    if (!buttons.length || !moodCards.length) {
+        return;
+    }
+
+    function showMood(mood, label) {
+        let visibleCount = 0;
+
+        moodCards.forEach(function (card) {
+            const moods = (card.dataset.moods || "").split(" ");
+            const shouldShow = moods.includes(mood);
+
+            card.style.display = shouldShow ? "" : "none";
+            if (shouldShow) {
+                visibleCount += 1;
+            }
+        });
+
+        if (resultText) {
+            resultText.innerText = visibleCount
+                ? label + " - " + visibleCount + " matching titles"
+                : "No titles found for " + label;
+        }
+    }
+
+    buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            buttons.forEach(function (item) {
+                item.classList.remove("active");
+                item.setAttribute("aria-pressed", "false");
+            });
+
+            button.classList.add("active");
+            button.setAttribute("aria-pressed", "true");
+            showMood(button.dataset.mood, button.innerText.trim());
+        });
+    });
+
+    const firstButton = buttons[0];
+    showMood(firstButton.dataset.mood, firstButton.innerText.trim());
+}
+
 setupSearch();
+setupMoodPicker();
