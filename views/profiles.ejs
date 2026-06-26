@@ -1,39 +1,45 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Profile</title>
     <link rel="stylesheet" href="/profiles.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>מי צופה ב-NETFLIX?</h1>
+    <main class="profiles-page">
+        <section class="profiles-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="profiles-logo" alt="Netflix">
+            <h1>Who's watching?</h1>
+            <p>Choose a profile to continue to your Netflix homepage.</p>
+        </section>
 
-        <div class="profiles">
+        <!-- Each profile card sends the user into the MVC homepage route. -->
+        <section class="profiles-grid" aria-label="Profile selection">
             <% personasList.forEach(function(persona) { %>
-                <a href="/homepage">
-                    <div class="profile">
-                        <img src="<%= persona.image %>" width="150" alt="<%= persona.name %>">
-                        <p><%= persona.name %></p>
-                    </div>
+                <a class="profile-card" href="/homepage" aria-label="Choose <%= persona.name %> profile">
+                    <img src="<%= persona.image %>" alt="<%= persona.name %> avatar">
+                    <strong><%= persona.name %></strong>
+                    <span>Choose Profile</span>
                 </a>
             <% }); %>
-        </div>
+        </section>
 
-        <% if (currentUser && currentUser.role === 'admin') { %>
-            <a href="/admin/users" class="manage" style="display: inline-block; text-decoration: none;">Admin Users</a>
-        <% } %>
+        <!-- Profile management actions stay below the selection grid. -->
+        <section class="profile-actions">
+            <% if (currentUser && currentUser.role === 'admin') { %>
+                <a href="/admin/users" class="secondary-action">Admin Users</a>
+            <% } %>
 
-        <button class="manage">נהל פרופילים</button>
-
-        <div class="add-persona-container" style="margin-top: 40px; text-align: center;">
-            <form action="/profiles/add" method="POST" style="display: inline-block;">
-                <input type="text" name="personaName" placeholder="שם פרופיל חדש" required style="padding: 10px; font-size: 16px; border-radius: 4px; border: 1px solid #666; background: #333; color: white; margin-left: 10px;">
-                <button type="submit" class="manage" style="display: inline-block; width: auto; padding: 10px 20px; cursor: pointer;">הוסף פרופיל</button>
+            <form action="/profiles/add" method="POST" class="add-profile-form">
+                <label for="personaName">Add a new profile</label>
+                <div class="add-profile-row">
+                    <input id="personaName" type="text" name="personaName" placeholder="Profile name" required>
+                    <button type="submit">Add Profile</button>
+                </div>
             </form>
-        </div>
-
-    </div>
+        </section>
+    </main>
 </body>
 </html>

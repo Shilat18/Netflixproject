@@ -17,6 +17,17 @@ const personaSchema = new mongoose.Schema({
 
 const Persona = mongoose.models.Persona || mongoose.model('Persona', personaSchema);
 
+const avatarImages = [
+    '/images/wednesday.jpg',
+    '/images/stranger.jpg',
+    '/images/ester.jpg',
+    '/images/proffesor.jpg',
+    '/images/bridgertonP.jpg',
+    '/images/emilyinparis.jpg',
+    '/images/ginny-georgia.jpg',
+    '/images/kissing.jpg'
+];
+
 const defaultPersonas = [
     { id: 1, name: 'User 1', image: '/images/wednesday.jpg' },
     { id: 2, name: 'User 2', image: '/images/stranger.jpg' },
@@ -32,11 +43,20 @@ function isMongoReady() {
     return mongoose.connection.readyState === 1;
 }
 
-function getSafePersona(persona) {
+// Rotate through existing project images so every profile has a visible avatar.
+function getAvatarByIndex(index) {
+    return avatarImages[index % avatarImages.length];
+}
+
+function getSafePersona(persona, index = 0) {
+    const image = !persona.image || persona.image === '/images/default-avatar.png'
+        ? getAvatarByIndex(index)
+        : persona.image;
+
     return {
         id: persona.id || persona._id.toString(),
         name: persona.name,
-        image: persona.image || '/images/default-avatar.png',
+        image,
         createdAt: persona.createdAt
     };
 }
@@ -63,13 +83,13 @@ async function getAllPersonas() {
         try {
             await ensureDefaultMongoPersonas();
             const mongoPersonas = await Persona.find({}).sort({ createdAt: 1 });
-            return mongoPersonas.map(getSafePersona);
+            return mongoPersonas.map((persona, index) => getSafePersona(persona, index));
         } catch (err) {
             console.error('Mongo personas read error:', err.message);
         }
     }
 
-    return personas;
+    return personas.map((persona, index) => getSafePersona(persona, index));
 }
 
 async function addPersona(name) {
@@ -78,10 +98,11 @@ async function addPersona(name) {
     if (isMongoReady()) {
         try {
             await ensureDefaultMongoPersonas();
+            const personaCount = await Persona.countDocuments();
 
             const newPersona = await Persona.create({
                 name: trimmedName,
-                image: '/images/default-avatar.png'
+                image: getAvatarByIndex(personaCount)
             });
 
             return getSafePersona(newPersona);
@@ -93,7 +114,7 @@ async function addPersona(name) {
     const newPersona = {
         id: nextMemoryPersonaId,
         name: trimmedName,
-        image: '/images/default-avatar.png'
+        image: getAvatarByIndex(nextMemoryPersonaId - 1)
     };
 
     nextMemoryPersonaId += 1;
