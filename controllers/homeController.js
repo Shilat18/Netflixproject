@@ -36,7 +36,28 @@ async function showContentDetails(req, res) {
     }
 }
 
+async function addMovieReview(req, res) {
+    try {
+        // Use the logged-in user name as the review author.
+        const movie = await movieModel.addReview(req.params.id, {
+            user: req.session.user ? req.session.user.name : 'Guest',
+            rating: req.body.rating,
+            text: req.body.reviewText
+        });
+
+        if (!movie) {
+            return res.redirect(`/content/${req.params.id}#reviews`);
+        }
+
+        res.redirect(`/content/${movie.id}#reviews`);
+    } catch (err) {
+        console.error('Add review error:', err.message);
+        res.status(500).send('Could not add review');
+    }
+}
+
 module.exports = {
+    addMovieReview,
     showHomepage,
     showContentDetails
 };

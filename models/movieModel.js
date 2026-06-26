@@ -261,6 +261,38 @@ function splitList(value) {
         .filter(Boolean);
 }
 
+// Validate review input before saving it.
+function normalizeReviewInput(data) {
+    const rating = Number(data.rating);
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        return null;
+    }
+
+    const text = (data.text || '').trim();
+    const user = (data.user || 'Guest').trim();
+
+    if (!text) {
+        return null;
+    }
+
+    return {
+        user,
+        rating,
+        text
+    };
+}
+
+// Keep the movie rating in sync with user reviews.
+function calculateAverageRating(reviews, fallbackRating) {
+    if (!reviews.length) {
+        return fallbackRating;
+    }
+
+    const totalRating = reviews.reduce((sum, review) => sum + Number(review.rating), 0);
+    return Number((totalRating / reviews.length).toFixed(1));
+}
+
 function getSafeMovie(movie) {
     if (!movie) {
         return null;
@@ -312,20 +344,46 @@ async function getMovieById(id) {
     if (isMongoReady()) {
         await ensureDefaultMongoContent();
 
-        const numericId = Number(id);
-
-        if (!Number.isNaN(numericId)) {
-            return getSafeMovie(await Content.findOne({ contentId: numericId }));
-        }
-
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return null;
-        }
-
-        return getSafeMovie(await Content.findById(id));
+        return getSafeMovie(await findMongoMovieById(id));
     }
 
     return getSafeMovie(memoryMovies.find((movie) => movie.id === Number(id)));
+}
+
+// Save a new review in MongoDB or memory fallback.
+async function addReview(movieId, reviewData) {
+    const review = normalizeReviewInput(reviewData);
+
+    if (!review) {
+        return null;
+    }
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const movie = await findMongoMovieById(movieId);
+
+        if (!movie) {
+            return null;
+        }
+
+        movie.reviews.push(review);
+        movie.rating = calculateAverageRating(movie.reviews, movie.rating);
+        await movie.save();
+
+        return getSafeMovie(movie);
+    }
+
+    const movie = memoryMovies.find((item) => item.id === Number(movieId));
+
+    if (!movie) {
+        return null;
+    }
+
+    movie.reviews.push(review);
+    movie.rating = calculateAverageRating(movie.reviews, movie.rating);
+
+    return getSafeMovie(movie);
 }
 
 async function createMovie(data) {
@@ -394,6 +452,21 @@ async function updateMovie(id, data) {
     };
 
     return getSafeMovie(memoryMovies[movieIndex]);
+}
+
+// Support both numeric content ids and MongoDB object ids.
+async function findMongoMovieById(id) {
+    const numericId = Number(id);
+
+    if (!Number.isNaN(numericId)) {
+        return Content.findOne({ contentId: numericId });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return null;
+    }
+
+    return Content.findById(id);
 }
 
 async function deleteMovie(id) {
@@ -494,6 +567,7 @@ async function getPersonalFeed(user) {
 
 module.exports = {
     Content,
+    addReview,
     buildPersonalFeed,
     createMovie,
     deleteMovie,

@@ -30,16 +30,38 @@
 
             <div class="quick-actions">
                 <button class="play-btn">Play</button>
-                <button class="info-btn">Add Rating</button>
+                <a href="#addReview" class="info-btn">Add Rating</a>
             </div>
 
             <h2 id="reviews">Reviews</h2>
-            <% movie.reviews.forEach(function(review) { %>
-                <article class="review-card">
-                    <strong><%= review.user %> rated <%= review.rating %>/5</strong>
-                    <p><%= review.text %></p>
-                </article>
-            <% }); %>
+            <% if (movie.reviews && movie.reviews.length) { %>
+                <% movie.reviews.forEach(function(review) { %>
+                    <article class="review-card">
+                        <strong><%= review.user %> rated <%= review.rating %>/5</strong>
+                        <p><%= review.text %></p>
+                    </article>
+                <% }); %>
+            <% } else { %>
+                <p class="empty-reviews">No reviews yet. Be the first to add one.</p>
+            <% } %>
+
+            <form id="addReview" class="review-form" action="/content/<%= movie.id %>/reviews" method="POST">
+                <h2>Add your review</h2>
+
+                <label for="rating">Rating</label>
+                <select id="rating" name="rating" required>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Great</option>
+                    <option value="3">3 - Good</option>
+                    <option value="2">2 - Okay</option>
+                    <option value="1">1 - Not for me</option>
+                </select>
+
+                <label for="reviewText">Review</label>
+                <textarea id="reviewText" name="reviewText" rows="4" maxlength="300" required placeholder="Write a short review..."></textarea>
+
+                <button type="submit" class="play-btn">Save Review</button>
+            </form>
         </section>
     </main>
 </body>
