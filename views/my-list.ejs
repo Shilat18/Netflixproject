@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/homepage.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="right">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo" alt="Netflix">
+            <ul class="menu">
+                <li><a href="/homepage">Home</a></li>
+                <li><a href="/my-list">My List</a></li>
+            </ul>
+        </div>
+
+        <div class="left">
+            <span class="user-chip"><%= currentUser.name %></span>
+            <img src="/images/ester.jpg" class="profile" alt="Profile">
+            <a href="/logout" class="nav-link">Logout</a>
+        </div>
+    </header>
+
+    <main class="feed-page my-list-page">
+        <section class="list-header">
+            <p class="movie-meta"><%= movies.length %> saved titles</p>
+            <h1>My List</h1>
+        </section>
+
+        <% if (movies.length) { %>
+            <section class="feed-row">
+                <div class="movie-grid">
+                    <% movies.forEach(function(movie) { %>
+                        <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/my-list' }) %>
+                    <% }); %>
+                </div>
+            </section>
+        <% } else { %>
+            <section class="empty-state">
+                <h2>Your list is empty</h2>
+                <p>Save movies and shows from the homepage or content page.</p>
+                <a href="/homepage" class="play-btn">Browse Titles</a>
+            </section>
+        <% } %>
+    </main>
+</body>
+
+</html>

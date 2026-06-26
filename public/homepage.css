@@ -45,6 +45,11 @@ body {
     color: #e5e5e5;
 }
 
+.menu a {
+    color: inherit;
+    text-decoration: none;
+}
+
 .menu li:hover,
 .nav-link:hover {
     color: #aaa;
@@ -148,6 +153,14 @@ body {
 .feed-tools button {
     background: rgba(109,109,110,0.72);
     color: white;
+}
+
+.inline-form {
+    display: inline-block;
+}
+
+.inline-form button {
+    font: inherit;
 }
 
 .feed-page {
@@ -340,6 +353,26 @@ body {
     color: #bbb;
 }
 
+.card-list-form {
+    margin-top: 12px;
+}
+
+.card-list-form button {
+    width: 100%;
+    min-height: 36px;
+    background: #242424;
+    color: white;
+    border: 1px solid #3a3a3a;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.card-list-form button:hover {
+    background: #e50914;
+    border-color: #e50914;
+}
+
 .details-page {
     width: min(1100px, calc(100% - 48px));
     margin: 42px auto;
@@ -366,6 +399,48 @@ body {
 
 .quick-actions {
     margin: 22px 0 30px;
+}
+
+.my-list-page {
+    min-height: calc(100vh - 76px);
+}
+
+.list-header {
+    margin: 22px 0 26px;
+}
+
+.list-header h1 {
+    margin: 0;
+    font-size: 44px;
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+    gap: 18px;
+}
+
+.movie-grid .feed-card {
+    width: 100%;
+    min-width: 0;
+}
+
+.empty-state {
+    width: min(520px, 100%);
+    padding: 34px;
+    background: #111;
+    border: 1px solid #2b2b2b;
+    border-radius: 8px;
+}
+
+.empty-state h2 {
+    margin: 0 0 10px;
+    font-size: 28px;
+}
+
+.empty-state p {
+    color: #bbb;
+    line-height: 1.5;
 }
 
 .empty-reviews {
@@ -464,6 +539,10 @@ body {
     }
 
     .details-page {
+        grid-template-columns: 1fr;
+    }
+
+    .movie-grid {
         grid-template-columns: 1fr;
     }
 }

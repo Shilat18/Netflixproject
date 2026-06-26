@@ -7,6 +7,8 @@ const router = express.Router();
 // Protected home and content routes.
 router.get('/homepage.html', requireLogin, (req, res) => res.redirect('/homepage'));
 router.get('/homepage', requireLogin, homeController.showHomepage);
+router.get('/my-list', requireLogin, homeController.showMyList);
+router.post('/my-list/:id/toggle', requireLogin, homeController.toggleMyList);
 router.get('/content/:id', requireLogin, homeController.showContentDetails);
 // Review form submission for a specific movie.
 router.post('/content/:id/reviews', requireLogin, homeController.addMovieReview);

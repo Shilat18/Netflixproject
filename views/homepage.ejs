@@ -18,7 +18,7 @@
                 <li>Series</li>
                 <li>Movies</li>
                 <li>New & Popular</li>
-                <li>My List</li>
+                <li><a href="/my-list">My List</a></li>
             </ul>
         </div>
 
@@ -41,6 +41,10 @@
             <p><%= feed.hero.description %></p>
             <a href="/content/<%= feed.hero.id %>" class="play-btn">Play</a>
             <a href="/content/<%= feed.hero.id %>" class="info-btn">More Info</a>
+            <form class="inline-form" action="/my-list/<%= feed.hero.id %>/toggle" method="POST">
+                <input type="hidden" name="redirectTo" value="/homepage">
+                <button type="submit" class="info-btn"><%= feed.hero.isInMyList ? 'Remove from My List' : '+ My List' %></button>
+            </form>
         </div>
     </section>
 
@@ -71,7 +75,7 @@
 
             <div class="movie-row mood-results" id="moodResults">
                 <% feed.moodMovies.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
                 <% }); %>
             </div>
         </section>
@@ -84,7 +88,7 @@
 
             <div class="movie-row">
                 <% feed.continueWatching.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: true }) %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: true, returnTo: '/homepage' }) %>
                 <% }); %>
             </div>
         </section>
@@ -97,7 +101,7 @@
 
             <div class="movie-row">
                 <% feed.recommendations.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
                 <% }); %>
             </div>
         </section>
@@ -112,7 +116,7 @@
                 <% feed.popular.forEach(function(movie, index) { %>
                     <article class="ranked-card">
                         <span class="rank-number"><%= index + 1 %></span>
-                        <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                        <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
                     </article>
                 <% }); %>
             </div>
@@ -127,7 +131,7 @@
 
                 <div class="movie-row">
                     <% feed.byCategory[category].forEach(function(movie) { %>
-                        <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                        <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
                     <% }); %>
                 </div>
             </section>

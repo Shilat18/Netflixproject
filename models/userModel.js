@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user'
+    },
+    myList: {
+        type: [String],
+        default: []
     }
 }, {
     timestamps: true
@@ -80,6 +84,7 @@ const memoryUsers = [
         email: 'admin@gmail.com',
         passwordHash: hashPassword('admin123'),
         role: 'admin',
+        myList: [],
         createdAt: new Date(),
         updatedAt: new Date()
     },
@@ -89,6 +94,7 @@ const memoryUsers = [
         email: 'test@gmail.com',
         passwordHash: hashPassword('123456'),
         role: 'user',
+        myList: [],
         createdAt: new Date(),
         updatedAt: new Date()
     }
@@ -107,13 +113,15 @@ async function ensureDefaultMongoUsers() {
                 name: 'Admin',
                 email: 'admin@gmail.com',
                 passwordHash: hashPassword('admin123'),
-                role: 'admin'
+                role: 'admin',
+                myList: []
             },
             {
                 name: 'Test User',
                 email: 'test@gmail.com',
                 passwordHash: hashPassword('123456'),
-                role: 'user'
+                role: 'user',
+                myList: []
             }
         ]);
     }
@@ -132,6 +140,7 @@ function getSafeUser(user) {
         name: user.name,
         email: user.email,
         role: user.role,
+        myList: (user.myList || []).map(String),
         createdAt: user.createdAt
     };
 }
@@ -150,10 +159,21 @@ async function findByEmail(email) {
 async function findById(id) {
     if (isMongoReady()) {
         await ensureDefaultMongoUsers();
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return null;
+        }
+
         return User.findById(id);
     }
 
-    return memoryUsers.find((user) => user.id === Number(id)) || null;
+    const numericId = Number(id);
+
+    if (Number.isNaN(numericId)) {
+        return null;
+    }
+
+    return memoryUsers.find((user) => user.id === numericId) || null;
 }
 
 async function createUser({ name, email, password, role = 'user' }) {
@@ -188,6 +208,7 @@ async function createUser({ name, email, password, role = 'user' }) {
         email: normalizedEmail,
         passwordHash: hashPassword(password),
         role,
+        myList: [],
         createdAt: new Date(),
         updatedAt: new Date()
     };
@@ -219,13 +240,61 @@ async function getAllUsers() {
     return memoryUsers.map(getSafeUser);
 }
 
+async function getMyListIds(userId) {
+    const user = await findById(userId);
+
+    if (!user) {
+        return [];
+    }
+
+    return (user.myList || []).map(String);
+}
+
+async function toggleMyListMovie(userId, movieId) {
+    const normalizedMovieId = String(movieId);
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoUsers();
+
+        const user = await findById(userId);
+
+        if (!user) {
+            return null;
+        }
+
+        const currentList = (user.myList || []).map(String);
+        user.myList = currentList.includes(normalizedMovieId)
+            ? currentList.filter((id) => id !== normalizedMovieId)
+            : [...currentList, normalizedMovieId];
+
+        await user.save();
+        return getSafeUser(user);
+    }
+
+    const user = await findById(userId);
+
+    if (!user) {
+        return null;
+    }
+
+    const currentList = (user.myList || []).map(String);
+    user.myList = currentList.includes(normalizedMovieId)
+        ? currentList.filter((id) => id !== normalizedMovieId)
+        : [...currentList, normalizedMovieId];
+    user.updatedAt = new Date();
+
+    return getSafeUser(user);
+}
+
 module.exports = {
     User,
     createUser,
     findByEmail,
     findById,
     getAllUsers,
+    getMyListIds,
     getSafeUser,
     hashPassword,
+    toggleMyListMovie,
     validateLogin
 };
