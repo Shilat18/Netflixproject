@@ -6,5 +6,10 @@ const router = express.Router();
 
 // Admin-only routes.
 router.get('/admin/users', requireLogin, requireAdmin, adminController.showUsers);
+router.get('/admin/content', requireLogin, requireAdmin, adminController.showContentManager);
+router.post('/admin/content/add', requireLogin, requireAdmin, adminController.addContent);
+router.get('/admin/content/:id/edit', requireLogin, requireAdmin, adminController.showEditContent);
+router.post('/admin/content/:id/update', requireLogin, requireAdmin, adminController.updateContent);
+router.post('/admin/content/:id/delete', requireLogin, requireAdmin, adminController.deleteContent);
 
 module.exports = router;

@@ -212,6 +212,7 @@ const moodOptions = [
 ];
 
 let checkedDefaultMongoContent = false;
+let nextMemoryMovieId = Math.max(...memoryMovies.map((movie) => movie.id)) + 1;
 
 function isMongoReady() {
     return mongoose.connection.readyState === 1;
@@ -232,6 +233,32 @@ function toMongoSeed(movie) {
         moods: movie.moods,
         reviews: movie.reviews
     };
+}
+
+function normalizeContentInput(data) {
+    return {
+        title: data.title.trim(),
+        description: data.description.trim(),
+        category: data.category.trim(),
+        year: Number(data.year),
+        rating: Number(data.rating),
+        image: (data.image || 'default-avatar.png').trim(),
+        views: Number(data.views) || 0,
+        progress: Number(data.progress) || 0,
+        tags: splitList(data.tags),
+        moods: splitList(data.moods)
+    };
+}
+
+function splitList(value) {
+    if (!value) {
+        return [];
+    }
+
+    return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
 }
 
 function getSafeMovie(movie) {
@@ -299,6 +326,104 @@ async function getMovieById(id) {
     }
 
     return getSafeMovie(memoryMovies.find((movie) => movie.id === Number(id)));
+}
+
+async function createMovie(data) {
+    const contentData = normalizeContentInput(data);
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const lastContent = await Content.findOne({}).sort({ contentId: -1 });
+        const nextContentId = lastContent ? lastContent.contentId + 1 : 1;
+        const newContent = await Content.create({
+            ...contentData,
+            contentId: nextContentId,
+            reviews: []
+        });
+
+        return getSafeMovie(newContent);
+    }
+
+    const newMovie = {
+        id: nextMemoryMovieId,
+        ...contentData,
+        reviews: []
+    };
+
+    nextMemoryMovieId += 1;
+    memoryMovies.push(newMovie);
+
+    return getSafeMovie(newMovie);
+}
+
+async function updateMovie(id, data) {
+    const contentData = normalizeContentInput(data);
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const numericId = Number(id);
+        let query = { contentId: numericId };
+
+        if (Number.isNaN(numericId)) {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                return null;
+            }
+
+            query = { _id: id };
+        }
+
+        const updatedContent = await Content.findOneAndUpdate(query, contentData, {
+            new: true,
+            runValidators: true
+        });
+
+        return getSafeMovie(updatedContent);
+    }
+
+    const movieIndex = memoryMovies.findIndex((movie) => movie.id === Number(id));
+
+    if (movieIndex === -1) {
+        return null;
+    }
+
+    memoryMovies[movieIndex] = {
+        ...memoryMovies[movieIndex],
+        ...contentData
+    };
+
+    return getSafeMovie(memoryMovies[movieIndex]);
+}
+
+async function deleteMovie(id) {
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const numericId = Number(id);
+        let query = { contentId: numericId };
+
+        if (Number.isNaN(numericId)) {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                return false;
+            }
+
+            query = { _id: id };
+        }
+
+        const deletedContent = await Content.findOneAndDelete(query);
+
+        return Boolean(deletedContent);
+    }
+
+    const movieIndex = memoryMovies.findIndex((movie) => movie.id === Number(id));
+
+    if (movieIndex === -1) {
+        return false;
+    }
+
+    memoryMovies.splice(movieIndex, 1);
+    return true;
 }
 
 // Titles the user already started watching.
@@ -370,9 +495,12 @@ async function getPersonalFeed(user) {
 module.exports = {
     Content,
     buildPersonalFeed,
+    createMovie,
+    deleteMovie,
     getAllMovies,
     getMovieById,
     getMoodOptions,
     getMoodMovies,
-    getPersonalFeed
+    getPersonalFeed,
+    updateMovie
 };

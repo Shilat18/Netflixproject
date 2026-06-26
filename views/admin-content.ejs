@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Content</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="admin-page">
+    <main class="admin-panel admin-panel-wide">
+        <div class="admin-header">
+            <div>
+                <p class="admin-eyebrow">Admin Area</p>
+                <h1>Content</h1>
+            </div>
+
+            <div class="admin-actions">
+                <a href="/admin/users">Users</a>
+                <a href="/homepage">Homepage</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+
+        <% if (errorMessage) { %>
+            <p class="alert-error"><%= errorMessage %></p>
+        <% } %>
+
+        <% if (successMessage) { %>
+            <p class="alert-success"><%= successMessage %></p>
+        <% } %>
+
+        <section class="admin-form-section">
+            <h2><%= editMovie ? 'Edit Content' : 'Add Content' %></h2>
+
+            <form
+                class="admin-form"
+                action="<%= editMovie ? '/admin/content/' + editMovie.id + '/update' : '/admin/content/add' %>"
+                method="POST">
+                <label>
+                    Title
+                    <input type="text" name="title" required value="<%= formData.title || (editMovie && editMovie.title) || '' %>">
+                </label>
+
+                <label>
+                    Category
+                    <input type="text" name="category" required value="<%= formData.category || (editMovie && editMovie.category) || '' %>">
+                </label>
+
+                <label>
+                    Year
+                    <input type="number" name="year" min="1900" required value="<%= formData.year || (editMovie && editMovie.year) || '' %>">
+                </label>
+
+                <label>
+                    Rating
+                    <input type="number" name="rating" min="0" max="5" step="0.1" required value="<%= formData.rating || (editMovie && editMovie.rating) || '' %>">
+                </label>
+
+                <label>
+                    Image file
+                    <input type="text" name="image" required value="<%= formData.image || (editMovie && editMovie.image) || '' %>">
+                </label>
+
+                <label>
+                    Views
+                    <input type="number" name="views" min="0" value="<%= formData.views || (editMovie && editMovie.views) || 0 %>">
+                </label>
+
+                <label>
+                    Progress
+                    <input type="number" name="progress" min="0" max="100" value="<%= formData.progress || (editMovie && editMovie.progress) || 0 %>">
+                </label>
+
+                <label>
+                    Tags
+                    <input type="text" name="tags" value="<%= formData.tags || (editMovie && editMovie.tags.join(', ')) || '' %>">
+                </label>
+
+                <label>
+                    Moods
+                    <input type="text" name="moods" value="<%= formData.moods || (editMovie && editMovie.moods.join(', ')) || '' %>">
+                </label>
+
+                <label class="admin-form-full">
+                    Description
+                    <textarea name="description" required><%= formData.description || (editMovie && editMovie.description) || '' %></textarea>
+                </label>
+
+                <div class="admin-form-actions">
+                    <button type="submit"><%= editMovie ? 'Save Changes' : 'Add Content' %></button>
+                    <% if (editMovie) { %>
+                        <a href="/admin/content">Cancel</a>
+                    <% } %>
+                </div>
+            </form>
+        </section>
+
+        <table class="users-table content-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Year</th>
+                    <th>Rating</th>
+                    <th>Views</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% movies.forEach(function(movie) { %>
+                    <tr>
+                        <td><%= movie.title %></td>
+                        <td><%= movie.category %></td>
+                        <td><%= movie.year %></td>
+                        <td><%= movie.rating %>/5</td>
+                        <td><%= movie.views %></td>
+                        <td class="table-actions">
+                            <a href="/content/<%= movie.id %>">View</a>
+                            <a href="/admin/content/<%= movie.id %>/edit">Edit</a>
+                            <form action="/admin/content/<%= movie.id %>/delete" method="POST">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>
