@@ -570,6 +570,10 @@ body {
     line-height: 1.5;
 }
 
+.watch-actions {
+    margin-bottom: 14px;
+}
+
 .watch-player {
     width: 100%;
     max-height: 72vh;

@@ -59,7 +59,7 @@ const contentSchema = new mongoose.Schema({
     },
     videoUrl: {
         type: String,
-        default: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        default: '/videos/demo-episode.mp4',
         trim: true
     },
     views: {
@@ -91,7 +91,7 @@ const contentSchema = new mongoose.Schema({
 const Content = mongoose.models.Content || mongoose.model('Content', contentSchema);
 
 // Demo playback URL used when a movie does not have a custom video yet.
-const DEFAULT_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+const DEFAULT_VIDEO_URL = '/videos/demo-episode.mp4';
 
 // Temporary content is used only when MongoDB is not available.
 const memoryMovies = [

@@ -22,12 +22,26 @@
             <p><%= movie.description %></p>
         </section>
 
-        <!-- Short demo video that simulates playing the selected content. -->
-        <video class="watch-player" controls autoplay poster="/images/<%= movie.image %>">
+        <div class="watch-actions">
+            <button type="button" class="play-btn" id="startVideo">Start Watching</button>
+        </div>
+
+        <!-- Short local demo video that simulates playing the selected content. -->
+        <video class="watch-player" id="watchPlayer" controls preload="auto" poster="/images/<%= movie.image %>">
             <source src="<%= movie.videoUrl %>" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </main>
+
+    <script>
+        // Start playback after a user click because browsers may block autoplay.
+        const startButton = document.getElementById('startVideo');
+        const watchPlayer = document.getElementById('watchPlayer');
+
+        startButton.addEventListener('click', function () {
+            watchPlayer.play();
+        });
+    </script>
 </body>
 
 </html>
