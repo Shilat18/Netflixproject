@@ -32,6 +32,10 @@ async function showHomepage(req, res) {
         const movies = markSavedMovies(await movieModel.getAllMovies(), myList);
         const feed = movieModel.buildPersonalFeed(req.session.user, movies);
 
+        // Keep the homepage stable even if an older feed shape is loaded.
+        feed.moods = feed.moods || movieModel.getMoodOptions();
+        feed.moodMovies = feed.moodMovies || movieModel.getMoodMovies(movies);
+
         res.render('homepage', {
             pageTitle: 'Home Page - Netflix',
             movies,
