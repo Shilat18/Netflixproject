@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= movie.title %></title>
+    <link rel="stylesheet" href="/homepage.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="right">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo" alt="Netflix">
+        </div>
+
+        <div class="left">
+            <a href="/homepage" class="nav-link">Home</a>
+            <a href="/logout" class="nav-link">Logout</a>
+        </div>
+    </header>
+
+    <main class="details-page">
+        <img src="/images/<%= movie.image %>" alt="<%= movie.title %>" class="details-poster">
+
+        <section class="details-copy">
+            <p class="movie-meta"><%= movie.category %> | <%= movie.year %> | Rating <%= movie.rating %></p>
+            <h1><%= movie.title %></h1>
+            <p><%= movie.description %></p>
+
+            <div class="quick-actions">
+                <button class="play-btn">Play</button>
+                <button class="info-btn">Add Rating</button>
+            </div>
+
+            <h2 id="reviews">Reviews</h2>
+            <% movie.reviews.forEach(function(review) { %>
+                <article class="review-card">
+                    <strong><%= review.user %> rated <%= review.rating %>/5</strong>
+                    <p><%= review.text %></p>
+                </article>
+            <% }); %>
+        </section>
+    </main>
+</body>
+
+</html>

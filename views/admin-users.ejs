@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Users</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="admin-page">
+    <main class="admin-panel">
+        <div class="admin-header">
+            <div>
+                <p class="admin-eyebrow">Admin Area</p>
+                <h1>Users</h1>
+            </div>
+
+            <div class="admin-actions">
+                <a href="/profiles">Profiles</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(function(user) { %>
+                    <tr>
+                        <td><%= user.name %></td>
+                        <td><%= user.email %></td>
+                        <td><span class="role-badge"><%= user.role %></span></td>
+                        <td><%= user.createdAt.toLocaleDateString('en-US') %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

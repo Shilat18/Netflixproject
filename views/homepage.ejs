@@ -1,63 +1,115 @@
 //Afik Ifrach - 314940081 , Shilat Maymon - 213249618//
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home page</title>
+    <title><%= pageTitle %></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/homepage.css">
 </head>
 
 <body>
-
     <header class="navbar">
         <div class="right">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo">
-            <ul class="תפריט">
-                <li>דף הבית</li>
-                <li>סדרות</li>
-                <li>סרטים</li>
-                <li>משחקים</li>
-                <li>חדשים ופופולריים</li>
-                <li>הרשימה שלי</li>
-                <li>דפדוף לפי שפות</li>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo" alt="Netflix">
+            <ul class="menu">
+                <li>Home</li>
+                <li>Series</li>
+                <li>Movies</li>
+                <li>New & Popular</li>
+                <li>My List</li>
             </ul>
         </div>
 
         <div class="left">
             <i class="fa-solid fa-magnifying-glass icon"></i>
             <i class="fa-regular fa-bell icon bell"></i>
-            <img src="/images/ester.jpg" class="profile">
-            <a href="/logout" style="color: white; margin-right: 15px; text-decoration: none; font-weight: bold;">התנתק</a>
+            <span class="user-chip"><%= currentUser.name %></span>
+            <img src="/images/ester.jpg" class="profile" alt="Profile">
+            <% if (currentUser && currentUser.role === 'admin') { %>
+                <a href="/admin/users" class="nav-link">Admin</a>
+            <% } %>
+            <a href="/logout" class="nav-link">Logout</a>
         </div>
     </header>
 
-    <section class="banner">
+    <section class="banner" style="background-image: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,0,0,0.3)), url('/images/<%= feed.hero.image %>');">
         <div class="banner-content">
-            <h1><%= movies[0].title %></h1>
-            <p><%= movies[0].description %></p>
-            <button class="play-btn">▶ Play</button>
-            <button class="info-btn">More Info</button>
+            <p class="movie-meta"><%= feed.hero.category %> | <%= feed.hero.year %> | Rating <%= feed.hero.rating %></p>
+            <h1><%= feed.hero.title %></h1>
+            <p><%= feed.hero.description %></p>
+            <a href="/content/<%= feed.hero.id %>" class="play-btn">Play</a>
+            <a href="/content/<%= feed.hero.id %>" class="info-btn">More Info</a>
         </div>
     </section>
 
-    <input id="searchInput" placeholder="חיפוש בפיד..." />
+    <main class="feed-page">
+        <section class="feed-tools">
+            <input id="searchInput" placeholder="Search in your feed..." aria-label="Search in your feed">
+            <button type="button" onclick="sortAZ()">Sort A-Z</button>
+        </section>
 
-    <div id="feedContainer">
-        <% movies.forEach(function(movie) { %>
-            <div class="movie-card">
-                <h3><%= movie.title %></h3>
-                <p><%= movie.description %></p>
+        <section class="feed-row">
+            <div class="row-title">
+                <h2>Continue Watching</h2>
+                <span><%= feed.continueWatching.length %> active titles</span>
             </div>
-        <% }); %>
-    </div>
 
-    <button onclick="sortAZ()">מיון A-Z</button>
+            <div class="movie-row">
+                <% feed.continueWatching.forEach(function(movie) { %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: true }) %>
+                <% }); %>
+            </div>
+        </section>
+
+        <section class="feed-row">
+            <div class="row-title">
+                <h2>Recommended For You</h2>
+                <span>Based on your profile</span>
+            </div>
+
+            <div class="movie-row">
+                <% feed.recommendations.forEach(function(movie) { %>
+                    <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                <% }); %>
+            </div>
+        </section>
+
+        <section class="feed-row">
+            <div class="row-title">
+                <h2>Top 10 Popular</h2>
+                <span>Most watched now</span>
+            </div>
+
+            <div class="movie-row">
+                <% feed.popular.forEach(function(movie, index) { %>
+                    <article class="ranked-card">
+                        <span class="rank-number"><%= index + 1 %></span>
+                        <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                    </article>
+                <% }); %>
+            </div>
+        </section>
+
+        <% Object.keys(feed.byCategory).forEach(function(category) { %>
+            <section class="feed-row">
+                <div class="row-title">
+                    <h2><%= category %></h2>
+                    <span><%= feed.byCategory[category].length %> titles</span>
+                </div>
+
+                <div class="movie-row">
+                    <% feed.byCategory[category].forEach(function(movie) { %>
+                        <%- include('partials/movie-card', { movie: movie, showProgress: false }) %>
+                    <% }); %>
+                </div>
+            </section>
+        <% }); %>
+    </main>
 
     <script src="/script.js"></script>
-
 </body>
 
 </html>

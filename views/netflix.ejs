@@ -22,6 +22,10 @@
             <p class="alert-error"><%= errorMessage %></p>
         <% } %>
 
+        <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+            <p class="alert-success"><%= successMessage %></p>
+        <% } %>
+
         <form action="/login" method="POST">
             
             <div class="input-group">

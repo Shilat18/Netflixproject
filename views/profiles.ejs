@@ -21,6 +21,10 @@
             <% }); %>
         </div>
 
+        <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/users" class="manage" style="display: inline-block; text-decoration: none;">Admin Users</a>
+        <% } %>
+
         <button class="manage">נהל פרופילים</button>
 
         <div class="add-persona-container" style="margin-top: 40px; text-align: center;">

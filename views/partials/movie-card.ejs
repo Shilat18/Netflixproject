@@ -1,0 +1,23 @@
+<article class="feed-card" data-title="<%= movie.title.toLowerCase() %>">
+    <a href="/content/<%= movie.id %>">
+        <img src="/images/<%= movie.image %>" class="card-img" alt="<%= movie.title %>">
+    </a>
+
+    <div class="card-body">
+        <p class="movie-meta"><%= movie.category %> | <%= movie.year %></p>
+        <h3><%= movie.title %></h3>
+        <p><%= movie.description %></p>
+
+        <% if (showProgress) { %>
+            <div class="progress-bar" aria-label="<%= movie.progress %>% watched">
+                <span style="width: <%= movie.progress %>%;"></span>
+            </div>
+        <% } %>
+
+        <div class="card-actions">
+            <a href="/content/<%= movie.id %>">Details</a>
+            <a href="/content/<%= movie.id %>#reviews">Reviews</a>
+            <span><%= movie.rating %>/5</span>
+        </div>
+    </div>
+</article>
