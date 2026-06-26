@@ -13,7 +13,7 @@ function validateForm() {
         return;
     }
 
-    window.location.href = "homepage.html";
+    window.location.href = "/homepage";
 }
 
 function setupSearch() {
