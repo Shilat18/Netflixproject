@@ -1,5 +1,92 @@
-// Step 9: movie and feed data lives in the model.
-const movies = [
+const mongoose = require('mongoose');
+
+const reviewSchema = new mongoose.Schema({
+    user: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5
+    },
+    text: {
+        type: String,
+        required: true,
+        trim: true
+    }
+}, {
+    _id: false
+});
+
+const contentSchema = new mongoose.Schema({
+    contentId: {
+        type: Number,
+        required: true,
+        unique: true
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    category: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    year: {
+        type: Number,
+        required: true
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 5
+    },
+    image: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    views: {
+        type: Number,
+        default: 0
+    },
+    progress: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100
+    },
+    tags: {
+        type: [String],
+        default: []
+    },
+    moods: {
+        type: [String],
+        default: []
+    },
+    reviews: {
+        type: [reviewSchema],
+        default: []
+    }
+}, {
+    timestamps: true
+});
+
+const Content = mongoose.models.Content || mongoose.model('Content', contentSchema);
+
+// Temporary content is used only when MongoDB is not available.
+const memoryMovies = [
     {
         id: 1,
         title: 'Poker Night',
@@ -124,23 +211,105 @@ const moodOptions = [
     { id: 'thoughtful', emoji: '🤯', label: 'Makes me think' }
 ];
 
-function getAllMovies() {
-    return movies;
+let checkedDefaultMongoContent = false;
+
+function isMongoReady() {
+    return mongoose.connection.readyState === 1;
 }
 
-function getMovieById(id) {
-    return movies.find((movie) => movie.id === Number(id)) || null;
+function toMongoSeed(movie) {
+    return {
+        contentId: movie.id,
+        title: movie.title,
+        description: movie.description,
+        category: movie.category,
+        year: movie.year,
+        rating: movie.rating,
+        image: movie.image,
+        views: movie.views,
+        progress: movie.progress,
+        tags: movie.tags,
+        moods: movie.moods,
+        reviews: movie.reviews
+    };
 }
 
-// Step 9: titles the user already started watching.
-function getContinueWatching() {
+function getSafeMovie(movie) {
+    if (!movie) {
+        return null;
+    }
+
+    const rawMovie = typeof movie.toObject === 'function' ? movie.toObject() : movie;
+
+    return {
+        id: rawMovie.id || rawMovie.contentId || rawMovie._id.toString(),
+        title: rawMovie.title,
+        description: rawMovie.description,
+        category: rawMovie.category,
+        year: rawMovie.year,
+        rating: rawMovie.rating,
+        image: rawMovie.image,
+        views: rawMovie.views,
+        progress: rawMovie.progress,
+        tags: rawMovie.tags || [],
+        moods: rawMovie.moods || [],
+        reviews: rawMovie.reviews || []
+    };
+}
+
+async function ensureDefaultMongoContent() {
+    if (!isMongoReady() || checkedDefaultMongoContent) {
+        return;
+    }
+
+    const contentCount = await Content.countDocuments();
+
+    if (contentCount === 0) {
+        await Content.create(memoryMovies.map(toMongoSeed));
+    }
+
+    checkedDefaultMongoContent = true;
+}
+
+async function getAllMovies() {
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+        const movies = await Content.find({}).sort({ contentId: 1 });
+        return movies.map(getSafeMovie);
+    }
+
+    return memoryMovies.map(getSafeMovie);
+}
+
+async function getMovieById(id) {
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const numericId = Number(id);
+
+        if (!Number.isNaN(numericId)) {
+            return getSafeMovie(await Content.findOne({ contentId: numericId }));
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return null;
+        }
+
+        return getSafeMovie(await Content.findById(id));
+    }
+
+    return getSafeMovie(memoryMovies.find((movie) => movie.id === Number(id)));
+}
+
+// Titles the user already started watching.
+function getContinueWatching(movies) {
     return movies
         .filter((movie) => movie.progress > 0 && movie.progress < 100)
         .sort((a, b) => b.progress - a.progress);
 }
 
-// Step 9: simple recommendations by user role.
-function getRecommendations(user) {
+// Simple recommendations by user role.
+function getRecommendations(user, movies) {
     const preferredCategories = user && user.role === 'admin'
         ? ['Thriller', 'Sci-Fi', 'Fantasy']
         : ['Drama', 'Comedy', 'Romance'];
@@ -151,15 +320,15 @@ function getRecommendations(user) {
         .slice(0, 6);
 }
 
-// Step 9: top titles by views.
-function getPopularMovies() {
+// Top titles by views.
+function getPopularMovies(movies) {
     return [...movies]
         .sort((a, b) => b.views - a.views)
         .slice(0, 10);
 }
 
-// Step 9: group feed titles by category.
-function getMoviesByCategory() {
+// Group feed titles by category.
+function getMoviesByCategory(movies) {
     return movies.reduce((groups, movie) => {
         if (!groups[movie.category]) {
             groups[movie.category] = [];
@@ -174,24 +343,33 @@ function getMoodOptions() {
     return moodOptions;
 }
 
-function getMoodMovies() {
+function getMoodMovies(movies) {
     return movies.filter((movie) => Array.isArray(movie.moods) && movie.moods.length > 0);
 }
 
-// Step 9: build all feed sections for the homepage.
-function getPersonalFeed(user) {
+function buildPersonalFeed(user, movies) {
+    const popular = getPopularMovies(movies);
+
     return {
-        hero: getPopularMovies()[0],
-        continueWatching: getContinueWatching(),
-        recommendations: getRecommendations(user),
-        popular: getPopularMovies(),
-        byCategory: getMoviesByCategory(),
+        hero: popular[0],
+        continueWatching: getContinueWatching(movies),
+        recommendations: getRecommendations(user, movies),
+        popular,
+        byCategory: getMoviesByCategory(movies),
         moods: getMoodOptions(),
-        moodMovies: getMoodMovies()
+        moodMovies: getMoodMovies(movies)
     };
 }
 
+// Build all feed sections for the homepage.
+async function getPersonalFeed(user) {
+    const movies = await getAllMovies();
+    return buildPersonalFeed(user, movies);
+}
+
 module.exports = {
+    Content,
+    buildPersonalFeed,
     getAllMovies,
     getMovieById,
     getMoodOptions,
