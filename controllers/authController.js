@@ -31,7 +31,7 @@ function showSignupPage(req, res) {
     renderSignup(res);
 }
 
-function login(req, res) {
+async function login(req, res) {
     const { email, password } = req.body;
 
     // Validate basic login input.
@@ -39,20 +39,25 @@ function login(req, res) {
         return renderLogin(res, 'Please enter a valid email and password.');
     }
 
-    // Check the hashed password through the model.
-    const user = userModel.validateLogin(email, password);
+    try {
+        // Check the hashed password through the model.
+        const user = await userModel.validateLogin(email, password);
 
-    if (user) {
-        // Save only safe user data in the session.
-        req.session.user = user;
-        req.session.userLoggedIn = true;
-        return res.redirect('/profiles');
+        if (user) {
+            // Save only safe user data in the session.
+            req.session.user = user;
+            req.session.userLoggedIn = true;
+            return res.redirect('/profiles');
+        }
+
+        renderLogin(res, 'The username or password is incorrect.');
+    } catch (err) {
+        console.error('Login error:', err.message);
+        renderLogin(res, 'Login failed. Please try again.');
     }
-
-    renderLogin(res, 'The username or password is incorrect.');
 }
 
-function signup(req, res) {
+async function signup(req, res) {
     const { name, email, password, confirmPassword } = req.body;
     const formData = { name, email };
 
@@ -73,19 +78,24 @@ function signup(req, res) {
         return renderSignup(res, 'Passwords do not match.', formData);
     }
 
-    const newUser = userModel.createUser({
-        name,
-        email,
-        password,
-        role: 'user'
-    });
+    try {
+        const newUser = await userModel.createUser({
+            name,
+            email,
+            password,
+            role: 'user'
+        });
 
-    // Do not allow duplicate email accounts.
-    if (!newUser) {
-        return renderSignup(res, 'A user with this email already exists.', formData);
+        // Do not allow duplicate email accounts.
+        if (!newUser) {
+            return renderSignup(res, 'A user with this email already exists.', formData);
+        }
+
+        renderLogin(res, null, 'Account created successfully. You can sign in now.');
+    } catch (err) {
+        console.error('Signup error:', err.message);
+        renderSignup(res, 'Signup failed. Please try again.', formData);
     }
-
-    renderLogin(res, null, 'Account created successfully. You can sign in now.');
 }
 
 function logout(req, res) {

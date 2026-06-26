@@ -1,10 +1,39 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 const HASH_ITERATIONS = 100000;
 const HASH_KEY_LENGTH = 64;
 const HASH_DIGEST = 'sha512';
 
-// Step 8: hash passwords before saving them.
+const userSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    passwordHash: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    }
+}, {
+    timestamps: true
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+// Hash passwords before saving them.
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
     const hash = crypto
         .pbkdf2Sync(password, salt, HASH_ITERATIONS, HASH_KEY_LENGTH, HASH_DIGEST)
@@ -13,7 +42,7 @@ function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
     return `${salt}:${hash}`;
 }
 
-// Step 8: compare login password with stored hash.
+// Compare login password with stored hash.
 function isPasswordMatch(password, storedPasswordHash) {
     const [salt, originalHash] = storedPasswordHash.split(':');
 
@@ -32,17 +61,27 @@ function isPasswordMatch(password, storedPasswordHash) {
     return crypto.timingSafeEqual(originalBuffer, candidateBuffer);
 }
 
-let nextUserId = 3;
+function normalizeEmail(email) {
+    return email.trim().toLowerCase();
+}
 
-// Temporary users until the project moves to MongoDB.
-const users = [
+function isMongoReady() {
+    return mongoose.connection.readyState === 1;
+}
+
+let nextMemoryUserId = 3;
+let checkedDefaultMongoUsers = false;
+
+// Temporary users are used only when MongoDB is not available.
+const memoryUsers = [
     {
         id: 1,
         name: 'Admin',
         email: 'admin@gmail.com',
         passwordHash: hashPassword('admin123'),
         role: 'admin',
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
     },
     {
         id: 2,
@@ -50,12 +89,36 @@ const users = [
         email: 'test@gmail.com',
         passwordHash: hashPassword('123456'),
         role: 'user',
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
     }
 ];
 
-function normalizeEmail(email) {
-    return email.trim().toLowerCase();
+async function ensureDefaultMongoUsers() {
+    if (!isMongoReady() || checkedDefaultMongoUsers) {
+        return;
+    }
+
+    const userCount = await User.countDocuments();
+
+    if (userCount === 0) {
+        await User.create([
+            {
+                name: 'Admin',
+                email: 'admin@gmail.com',
+                passwordHash: hashPassword('admin123'),
+                role: 'admin'
+            },
+            {
+                name: 'Test User',
+                email: 'test@gmail.com',
+                passwordHash: hashPassword('123456'),
+                role: 'user'
+            }
+        ]);
+    }
+
+    checkedDefaultMongoUsers = true;
 }
 
 // Return user data without the password hash.
@@ -65,7 +128,7 @@ function getSafeUser(user) {
     }
 
     return {
-        id: user.id,
+        id: user.id || user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
@@ -73,40 +136,71 @@ function getSafeUser(user) {
     };
 }
 
-function findByEmail(email) {
-    const normalizedEmail = normalizeEmail(email);
-    return users.find((user) => user.email === normalizedEmail) || null;
-}
-
-function findById(id) {
-    return users.find((user) => user.id === Number(id)) || null;
-}
-
-function createUser({ name, email, password, role = 'user' }) {
+async function findByEmail(email) {
     const normalizedEmail = normalizeEmail(email);
 
-    if (findByEmail(normalizedEmail)) {
+    if (isMongoReady()) {
+        await ensureDefaultMongoUsers();
+        return User.findOne({ email: normalizedEmail });
+    }
+
+    return memoryUsers.find((user) => user.email === normalizedEmail) || null;
+}
+
+async function findById(id) {
+    if (isMongoReady()) {
+        await ensureDefaultMongoUsers();
+        return User.findById(id);
+    }
+
+    return memoryUsers.find((user) => user.id === Number(id)) || null;
+}
+
+async function createUser({ name, email, password, role = 'user' }) {
+    const normalizedEmail = normalizeEmail(email);
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoUsers();
+
+        const existingUser = await User.findOne({ email: normalizedEmail });
+
+        if (existingUser) {
+            return null;
+        }
+
+        const newUser = await User.create({
+            name: name.trim(),
+            email: normalizedEmail,
+            passwordHash: hashPassword(password),
+            role
+        });
+
+        return getSafeUser(newUser);
+    }
+
+    if (memoryUsers.find((user) => user.email === normalizedEmail)) {
         return null;
     }
 
-    const newUser = {
-        id: nextUserId,
+    const newMemoryUser = {
+        id: nextMemoryUserId,
         name: name.trim(),
         email: normalizedEmail,
         passwordHash: hashPassword(password),
         role,
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
 
-    nextUserId += 1;
-    users.push(newUser);
+    nextMemoryUserId += 1;
+    memoryUsers.push(newMemoryUser);
 
-    return getSafeUser(newUser);
+    return getSafeUser(newMemoryUser);
 }
 
 // Validate login and return safe session data.
-function validateLogin(email, password) {
-    const user = findByEmail(email);
+async function validateLogin(email, password) {
+    const user = await findByEmail(email);
 
     if (!user || !isPasswordMatch(password, user.passwordHash)) {
         return null;
@@ -115,15 +209,23 @@ function validateLogin(email, password) {
     return getSafeUser(user);
 }
 
-function getAllUsers() {
-    return users.map(getSafeUser);
+async function getAllUsers() {
+    if (isMongoReady()) {
+        await ensureDefaultMongoUsers();
+        const users = await User.find({}).sort({ createdAt: -1 });
+        return users.map(getSafeUser);
+    }
+
+    return memoryUsers.map(getSafeUser);
 }
 
 module.exports = {
+    User,
     createUser,
     findByEmail,
     findById,
     getAllUsers,
     getSafeUser,
+    hashPassword,
     validateLogin
 };
