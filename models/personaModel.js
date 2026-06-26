@@ -36,7 +36,7 @@ function getSafePersona(persona) {
     return {
         id: persona.id || persona._id.toString(),
         name: persona.name,
-        image: persona.image,
+        image: persona.image || '/images/default-avatar.png',
         createdAt: persona.createdAt
     };
 }
@@ -60,9 +60,13 @@ async function ensureDefaultMongoPersonas() {
 
 async function getAllPersonas() {
     if (isMongoReady()) {
-        await ensureDefaultMongoPersonas();
-        const mongoPersonas = await Persona.find({}).sort({ createdAt: 1 });
-        return mongoPersonas.map(getSafePersona);
+        try {
+            await ensureDefaultMongoPersonas();
+            const mongoPersonas = await Persona.find({}).sort({ createdAt: 1 });
+            return mongoPersonas.map(getSafePersona);
+        } catch (err) {
+            console.error('Mongo personas read error:', err.message);
+        }
     }
 
     return personas;
@@ -72,14 +76,18 @@ async function addPersona(name) {
     const trimmedName = name.trim();
 
     if (isMongoReady()) {
-        await ensureDefaultMongoPersonas();
+        try {
+            await ensureDefaultMongoPersonas();
 
-        const newPersona = await Persona.create({
-            name: trimmedName,
-            image: '/images/default-avatar.png'
-        });
+            const newPersona = await Persona.create({
+                name: trimmedName,
+                image: '/images/default-avatar.png'
+            });
 
-        return getSafePersona(newPersona);
+            return getSafePersona(newPersona);
+        } catch (err) {
+            console.error('Mongo persona create error:', err.message);
+        }
     }
 
     const newPersona = {
