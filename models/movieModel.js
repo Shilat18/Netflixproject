@@ -66,6 +66,10 @@ const contentSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    likedBy: {
+        type: [String],
+        default: []
+    },
     progress: {
         type: Number,
         default: 0,
@@ -253,6 +257,7 @@ function toMongoSeed(movie) {
         image: movie.image,
         videoUrl: movie.videoUrl || DEFAULT_VIDEO_URL,
         views: movie.views,
+        likedBy: movie.likedBy || [],
         progress: movie.progress,
         tags: movie.tags,
         moods: movie.moods,
@@ -348,19 +353,38 @@ function getSafeMovie(movie) {
         return null;
     }
 
-    const rawMovie = typeof movie.toObject === 'function' ? movie.toObject() : movie;
+    const rawMovie =
+        typeof movie.toObject === 'function'
+            ? movie.toObject()
+            : movie;
+
+    const likedBy =
+        (rawMovie.likedBy || []).map(String);
 
     return {
-        id: rawMovie.id || rawMovie.contentId || rawMovie._id.toString(),
+        id:
+            rawMovie.id ||
+            rawMovie.contentId ||
+            rawMovie._id.toString(),
+
         title: rawMovie.title,
         description: rawMovie.description,
         category: rawMovie.category,
         year: rawMovie.year,
         rating: rawMovie.rating,
         image: rawMovie.image,
-        videoUrl: rawMovie.videoUrl || DEFAULT_VIDEO_URL,
-        views: rawMovie.views,
-        progress: rawMovie.progress,
+        videoUrl:
+            rawMovie.videoUrl ||
+            DEFAULT_VIDEO_URL,
+
+        views: Number(rawMovie.views || 0),
+
+        likedBy,
+        likeCount: likedBy.length,
+
+        progress:
+            Number(rawMovie.progress || 0),
+
         tags: rawMovie.tags || [],
         moods: getMovieMoods(rawMovie),
         reviews: rawMovie.reviews || []
@@ -399,6 +423,71 @@ async function getMovieById(id) {
     }
 
     return getSafeMovie(memoryMovies.find((movie) => movie.id === Number(id)));
+}
+
+async function toggleLike(movieId, userId) {
+    const normalizedUserId =
+        String(userId);
+
+    if (isMongoReady()) {
+        await ensureDefaultMongoContent();
+
+        const movie =
+            await findMongoMovieById(movieId);
+
+        if (!movie) {
+            return null;
+        }
+
+        const likedBy =
+            (movie.likedBy || []).map(String);
+
+        if (
+            likedBy.includes(normalizedUserId)
+        ) {
+            movie.likedBy =
+                likedBy.filter(function (id) {
+                    return id !== normalizedUserId;
+                });
+        } else {
+            movie.likedBy = [
+                ...likedBy,
+                normalizedUserId
+            ];
+        }
+
+        await movie.save();
+
+        return getSafeMovie(movie);
+    }
+
+    const movie =
+        memoryMovies.find(function (item) {
+            return item.id === Number(movieId);
+        });
+
+    if (!movie) {
+        return null;
+    }
+
+    const likedBy =
+        (movie.likedBy || []).map(String);
+
+    if (
+        likedBy.includes(normalizedUserId)
+    ) {
+        movie.likedBy =
+            likedBy.filter(function (id) {
+                return id !== normalizedUserId;
+            });
+    } else {
+        movie.likedBy = [
+            ...likedBy,
+            normalizedUserId
+        ];
+    }
+
+    return getSafeMovie(movie);
 }
 
 // Save a new review in MongoDB or memory fallback.
@@ -576,6 +665,25 @@ function getPopularMovies(movies) {
         .slice(0, 10);
 }
 
+function getTopLikedMovies(movies) {
+    return [...movies]
+        .sort(function (a, b) {
+            const likeDifference =
+                Number(b.likeCount || 0) -
+                Number(a.likeCount || 0);
+
+            if (likeDifference !== 0) {
+                return likeDifference;
+            }
+
+            return (
+                Number(b.views || 0) -
+                Number(a.views || 0)
+            );
+        })
+        .slice(0, 10);
+}
+
 // Group feed titles by category.
 function getMoviesByCategory(movies) {
     return movies.reduce((groups, movie) => {
@@ -597,16 +705,33 @@ function getMoodMovies(movies) {
 }
 
 function buildPersonalFeed(user, movies) {
-    const popular = getPopularMovies(movies);
+    const popular =
+        getPopularMovies(movies);
+
+    const topLiked =
+        getTopLikedMovies(movies);
 
     return {
         hero: popular[0],
-        continueWatching: getContinueWatching(movies),
-        recommendations: getRecommendations(user, movies),
+
+        continueWatching:
+            getContinueWatching(movies),
+
+        recommendations:
+            getRecommendations(user, movies),
+
         popular,
-        byCategory: getMoviesByCategory(movies),
-        moods: getMoodOptions(),
-        moodMovies: getMoodMovies(movies)
+
+        topLiked,
+
+        byCategory:
+            getMoviesByCategory(movies),
+
+        moods:
+            getMoodOptions(),
+
+        moodMovies:
+            getMoodMovies(movies)
     };
 }
 
@@ -627,5 +752,6 @@ module.exports = {
     getMoodOptions,
     getMoodMovies,
     getPersonalFeed,
+    toggleLike,
     updateMovie
 };

@@ -216,7 +216,8 @@ body {
 }
 
 .admin-form input,
-.admin-form textarea {
+.admin-form textarea,
+.admin-form select {
     background: #050505;
     border: 1px solid #333;
     border-radius: 4px;
@@ -281,5 +282,62 @@ body {
     .admin-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+}
+
+.statistics-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.statistics-card {
+    padding: 25px;
+    border-radius: 12px;
+    background-color: #181818;
+    text-align: center;
+}
+
+.statistics-card h2 {
+    margin: 0;
+    font-size: 2.4rem;
+    color: #e50914;
+}
+
+.statistics-card p {
+    margin-bottom: 0;
+}
+
+.statistics-chart {
+    margin-top: 35px;
+    padding: 25px;
+    border-radius: 12px;
+    background-color: #181818;
+    overflow-x: auto;
+}
+
+.statistics-chart svg {
+    width: 100%;
+    min-width: 650px;
+}
+
+.statistics-chart text {
+    fill: white;
+}
+
+.statistics-chart line,
+.statistics-chart path {
+    stroke: #777;
+}
+
+.views-bar,
+.category-bar {
+    fill: #e50914;
+}
+
+@media (max-width: 800px) {
+    .statistics-cards {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

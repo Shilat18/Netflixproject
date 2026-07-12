@@ -3,154 +3,539 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
     <title><%= pageTitle %></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/homepage.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="/homepage.css">
 </head>
 
 <body>
-    <% const moodOptions = feed.moods || []; %>
-    <% const moodMovies = feed.moodMovies || []; %>
+
+    <%
+        const moodOptions =
+            feed.moods || [];
+
+        const moodMovies =
+            feed.moodMovies || [];
+
+        const continueWatching =
+            feed.continueWatching || [];
+
+        const recommendations =
+            feed.recommendations || [];
+
+        const popularMovies =
+            feed.popular || [];
+
+        const topLikedMovies =
+            feed.topLiked || [];
+
+        const moviesByCategory =
+            feed.byCategory || {};
+
+        const hero =
+            feed.hero || null;
+    %>
 
     <header class="navbar">
+
         <div class="right">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" class="logo" alt="Netflix">
+
+            <img
+                src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg"
+                class="logo"
+                alt="Netflix">
+
             <ul class="menu">
+
                 <li>Home</li>
+
                 <li>Series</li>
+
                 <li>Movies</li>
+
                 <li>New & Popular</li>
-                <li><a href="/my-list">My List (<%= typeof myListCount !== 'undefined' ? myListCount : 0 %>)</a></li>
+
+                <li>
+                    <a href="/my-list">
+                        My List
+                        (<%= typeof myListCount !== 'undefined'
+                            ? myListCount
+                            : 0 %>)
+                    </a>
+                </li>
+
             </ul>
+
         </div>
 
         <div class="left">
+
             <i class="fa-solid fa-magnifying-glass icon"></i>
+
             <i class="fa-regular fa-bell icon bell"></i>
-            <span class="user-chip"><%= currentUser.name %></span>
-            <img src="/images/ester.jpg" class="profile" alt="Profile">
-            <% if (currentUser && currentUser.role === 'admin') { %>
-                <a href="/admin/users" class="nav-link">Admin</a>
+
+            <span class="user-chip">
+                <%= currentUser.name %>
+            </span>
+
+            <img
+                src="/images/ester.jpg"
+                class="profile"
+                alt="Profile">
+
+            <% if (
+                currentUser &&
+                currentUser.role === 'admin'
+            ) { %>
+
+                <a
+                    href="/admin/users"
+                    class="nav-link">
+                    Admin
+                </a>
+
             <% } %>
-            <a href="/logout" class="nav-link">Logout</a>
+
+            <a
+                href="/logout"
+                class="nav-link">
+                Logout
+            </a>
+
         </div>
+
     </header>
 
-    <section class="banner" style="background-image: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,0,0,0.3)), url('/images/<%= feed.hero.image %>');">
-        <div class="banner-content">
-            <p class="movie-meta"><%= feed.hero.category %> | <%= feed.hero.year %> | Rating <%= feed.hero.rating %></p>
-            <h1><%= feed.hero.title %></h1>
-            <p><%= feed.hero.description %></p>
-            <a href="/watch/<%= feed.hero.id %>" class="play-btn">Play</a>
-            <a href="/content/<%= feed.hero.id %>" class="info-btn">More Info</a>
-            <form class="inline-form" action="/my-list/<%= feed.hero.id %>/toggle" method="POST">
-                <input type="hidden" name="redirectTo" value="/homepage">
-                <button type="submit" class="info-btn"><%= feed.hero.isInMyList ? 'Saved in My List' : 'Add to My List' %></button>
-            </form>
-        </div>
-    </section>
 
-    <main class="feed-page">
-        <section class="feed-tools">
-            <input id="searchInput" placeholder="Search in your feed..." aria-label="Search in your feed">
-            <button type="button" onclick="sortAZ()">Sort A-Z</button>
-        </section>
+    <% if (hero) { %>
 
-        <!-- Mood picker is the custom recommendation feature. -->
-        <section class="mood-picker mood-feature" aria-labelledby="moodTitle">
-            <div class="mood-feature-copy">
-                <p>Special feature</p>
-                <h2 id="moodTitle">What to watch by mood</h2>
-                <span id="moodResultText">Choose your mood</span>
+        <section
+            class="banner"
+            style="
+                background-image:
+                    linear-gradient(
+                        90deg,
+                        rgba(0, 0, 0, 0.9),
+                        rgba(0, 0, 0, 0.3)
+                    ),
+                    url('/images/<%= hero.image %>');
+            ">
+
+            <div class="banner-content">
+
+                <p class="movie-meta">
+
+                    <%= hero.category %>
+                    |
+                    <%= hero.year %>
+                    |
+                    Rating
+                    <%= hero.rating %>
+
+                </p>
+
+                <h1>
+                    <%= hero.title %>
+                </h1>
+
+                <p>
+                    <%= hero.description %>
+                </p>
+
+                <a
+                    href="/watch/<%= hero.id %>"
+                    class="play-btn">
+                    Play
+                </a>
+
+                <a
+                    href="/content/<%= hero.id %>"
+                    class="info-btn">
+                    More Info
+                </a>
+
+                <form
+                    class="inline-form"
+                    action="/my-list/<%= hero.id %>/toggle"
+                    method="POST">
+
+                    <input
+                        type="hidden"
+                        name="redirectTo"
+                        value="/homepage">
+
+                    <button
+                        type="submit"
+                        class="info-btn">
+
+                        <%= hero.isInMyList
+                            ? 'Saved in My List'
+                            : 'Add to My List' %>
+
+                    </button>
+
+                </form>
+
+                <form
+                    class="inline-form"
+                    action="/content/<%= hero.id %>/like"
+                    method="POST">
+
+                    <input
+                        type="hidden"
+                        name="redirectTo"
+                        value="/homepage">
+
+                    <button
+                        type="submit"
+                        class="info-btn">
+
+                        <%= hero.isLiked
+                            ? '♥ Unlike'
+                            : '♡ Like' %>
+
+                        (<%= hero.likeCount || 0 %>)
+
+                    </button>
+
+                </form>
+
             </div>
 
-            <div class="mood-buttons" role="list" aria-label="Mood choices">
-                <% moodOptions.forEach(function(mood, index) { %>
+        </section>
+
+    <% } %>
+
+
+    <main class="feed-page">
+
+        <section class="feed-tools">
+
+            <input
+                id="searchInput"
+                placeholder="Search in your feed..."
+                aria-label="Search in your feed">
+
+            <button
+                type="button"
+                onclick="sortAZ()">
+                Sort A-Z
+            </button>
+
+        </section>
+
+
+        <!-- Mood recommendations -->
+
+        <section
+            class="mood-picker mood-feature"
+            aria-labelledby="moodTitle">
+
+            <div class="mood-feature-copy">
+
+                <p>Special feature</p>
+
+                <h2 id="moodTitle">
+                    What to watch by mood
+                </h2>
+
+                <span id="moodResultText">
+                    Choose your mood
+                </span>
+
+            </div>
+
+            <div
+                class="mood-buttons"
+                role="list"
+                aria-label="Mood choices">
+
+                <% moodOptions.forEach(function (mood, index) { %>
+
                     <button
                         type="button"
                         class="mood-btn <%= index === 0 ? 'active' : '' %>"
                         data-mood="<%= mood.id %>"
                         aria-pressed="<%= index === 0 ? 'true' : 'false' %>">
-                        <span><%= mood.emoji %></span>
+
+                        <span>
+                            <%= mood.emoji %>
+                        </span>
+
                         <%= mood.label %>
+
                     </button>
+
                 <% }); %>
+
             </div>
 
-            <div class="movie-row mood-results" id="moodResults">
-                <% moodMovies.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
+            <div
+                class="movie-row mood-results"
+                id="moodResults">
+
+                <% moodMovies.forEach(function (movie) { %>
+
+                    <%- include(
+                        'partials/movie-card',
+                        {
+                            movie: movie,
+                            showProgress: false,
+                            returnTo: '/homepage'
+                        }
+                    ) %>
+
                 <% }); %>
+
             </div>
 
-            <% if (!moodMovies.length) { %>
+            <% if (moodMovies.length === 0) { %>
+
                 <div class="empty-state mood-empty">
-                    <h2>No mood matches yet</h2>
-                    <p>Add moods to movies in the content model to show personalized mood recommendations.</p>
+
+                    <h2>
+                        No mood matches yet
+                    </h2>
+
+                    <p>
+                        Add moods to movies to show
+                        personalized recommendations.
+                    </p>
+
                 </div>
+
             <% } %>
+
         </section>
 
+
+        <!-- Continue Watching -->
+
         <section class="feed-row">
+
             <div class="row-title">
+
                 <h2>Continue Watching</h2>
-                <span><%= feed.continueWatching.length %> active titles</span>
+
+                <span>
+                    <%= continueWatching.length %>
+                    active titles
+                </span>
+
             </div>
 
             <div class="movie-row">
-                <% feed.continueWatching.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: true, returnTo: '/homepage' }) %>
+
+                <% continueWatching.forEach(function (movie) { %>
+
+                    <%- include(
+                        'partials/movie-card',
+                        {
+                            movie: movie,
+                            showProgress: true,
+                            returnTo: '/homepage'
+                        }
+                    ) %>
+
                 <% }); %>
+
+                <% if (continueWatching.length === 0) { %>
+
+                    <p>
+                        Start watching content and it
+                        will appear here.
+                    </p>
+
+                <% } %>
+
             </div>
+
         </section>
 
+
+        <!-- Recommendations -->
+
         <section class="feed-row">
+
             <div class="row-title">
+
                 <h2>Recommended For You</h2>
-                <span>Based on your profile</span>
+
+                <span>
+                    Based on your profile
+                </span>
+
             </div>
 
             <div class="movie-row">
-                <% feed.recommendations.forEach(function(movie) { %>
-                    <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
+
+                <% recommendations.forEach(function (movie) { %>
+
+                    <%- include(
+                        'partials/movie-card',
+                        {
+                            movie: movie,
+                            showProgress: false,
+                            returnTo: '/homepage'
+                        }
+                    ) %>
+
                 <% }); %>
+
             </div>
+
         </section>
+
+
+        <!-- Top 10 Popular -->
 
         <section class="feed-row">
+
             <div class="row-title">
+
                 <h2>Top 10 Popular</h2>
-                <span>Most watched now</span>
+
+                <span>
+                    Most watched now
+                </span>
+
             </div>
 
             <div class="movie-row">
-                <% feed.popular.forEach(function(movie, index) { %>
+
+                <% popularMovies.forEach(function (movie, index) { %>
+
                     <article class="ranked-card">
-                        <span class="rank-number"><%= index + 1 %></span>
-                        <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
+
+                        <span class="rank-number">
+                            <%= index + 1 %>
+                        </span>
+
+                        <%- include(
+                            'partials/movie-card',
+                            {
+                                movie: movie,
+                                showProgress: false,
+                                returnTo: '/homepage'
+                            }
+                        ) %>
+
                     </article>
+
                 <% }); %>
+
             </div>
+
         </section>
 
-        <% Object.keys(feed.byCategory).forEach(function(category) { %>
+
+        <!-- Top 10 by Likes -->
+
+        <section class="feed-row">
+
+            <div class="row-title">
+
+                <h2>Top 10 by Likes</h2>
+
+                <span>
+                    Most liked content
+                </span>
+
+            </div>
+
+            <div class="movie-row">
+
+                <% if (topLikedMovies.length > 0) { %>
+
+                    <% topLikedMovies.forEach(function (movie, index) { %>
+
+                        <article class="ranked-card">
+
+                            <span class="rank-number">
+                                <%= index + 1 %>
+                            </span>
+
+                            <%- include(
+                                'partials/movie-card',
+                                {
+                                    movie: movie,
+                                    showProgress: false,
+                                    returnTo: '/homepage'
+                                }
+                            ) %>
+
+                        </article>
+
+                    <% }); %>
+
+                <% } else { %>
+
+                    <p>
+                        No liked content yet.
+                    </p>
+
+                <% } %>
+
+            </div>
+
+        </section>
+
+
+        <!-- Categories -->
+
+        <% Object.keys(moviesByCategory).forEach(function (category) { %>
+
             <section class="feed-row">
+
                 <div class="row-title">
-                    <h2><%= category %></h2>
-                    <span><%= feed.byCategory[category].length %> titles</span>
+
+                    <h2>
+                        <%= category %>
+                    </h2>
+
+                    <span>
+                        <%= moviesByCategory[category].length %>
+                        titles
+                    </span>
+
                 </div>
 
                 <div class="movie-row">
-                    <% feed.byCategory[category].forEach(function(movie) { %>
-                        <%- include('partials/movie-card', { movie: movie, showProgress: false, returnTo: '/homepage' }) %>
+
+                    <% moviesByCategory[category].forEach(function (movie) { %>
+
+                        <%- include(
+                            'partials/movie-card',
+                            {
+                                movie: movie,
+                                showProgress: false,
+                                returnTo: '/homepage'
+                            }
+                        ) %>
+
                     <% }); %>
+
                 </div>
+
             </section>
+
         <% }); %>
+
     </main>
 
     <script src="/script.js"></script>
+
 </body>
 
 </html>

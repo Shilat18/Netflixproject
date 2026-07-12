@@ -3,45 +3,362 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watching <%= movie.title %></title>
-    <link rel="stylesheet" href="/homepage.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Watching <%= movie.title %>
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/homepage.css">
 </head>
 
 <body class="watch-body">
+
+    <%
+        const safeResumeTime =
+            typeof resumeTime !== 'undefined'
+                ? Number(resumeTime) || 0
+                : 0;
+    %>
+
     <header class="watch-header">
-        <a href="/homepage" class="nav-link">Home</a>
-        <a href="/content/<%= movie.id %>" class="nav-link">Details</a>
-        <a href="/logout" class="nav-link">Logout</a>
+
+        <a
+            href="/homepage"
+            class="nav-link">
+            Home
+        </a>
+
+        <a
+            href="/content/<%= movie.id %>"
+            class="nav-link">
+            Details
+        </a>
+
+        <a
+            href="/logout"
+            class="nav-link"
+            id="logoutLink">
+            Logout
+        </a>
+
     </header>
 
     <main class="watch-page">
+
         <section class="watch-copy">
-            <p class="movie-meta"><%= movie.category %> | <%= movie.year %> | Rating <%= movie.rating %></p>
-            <h1><%= movie.title %></h1>
-            <p><%= movie.description %></p>
+
+            <p class="movie-meta">
+                <%= movie.category %>
+                |
+                <%= movie.year %>
+                |
+                Rating
+                <%= movie.rating %>
+            </p>
+
+            <h1>
+                <%= movie.title %>
+            </h1>
+
+            <p>
+                <%= movie.description %>
+            </p>
+
+            <% if (safeResumeTime > 0) { %>
+
+                <p id="resumeMessage">
+                    Your last watch point was saved.
+                    Playback will continue from there.
+                </p>
+
+            <% } %>
+
         </section>
 
         <div class="watch-actions">
-            <button type="button" class="play-btn" id="startVideo">Start Watching</button>
+
+            <button
+                type="button"
+                class="play-btn"
+                id="startVideo">
+
+                <%= safeResumeTime > 0
+                    ? 'Resume Watching'
+                    : 'Start Watching' %>
+
+            </button>
+
         </div>
 
-        <!-- Short local demo video that simulates playing the selected content. -->
-        <video class="watch-player" id="watchPlayer" controls preload="auto" poster="/images/<%= movie.image %>">
-            <source src="<%= movie.videoUrl %>" type="video/mp4">
-            Your browser does not support the video tag.
+        <video
+            class="watch-player"
+            id="watchPlayer"
+            controls
+            preload="metadata"
+            poster="/images/<%= movie.image %>">
+
+            <source
+                src="<%= movie.videoUrl %>"
+                type="video/mp4">
+
+            Your browser does not support
+            the video tag.
+
         </video>
+
     </main>
 
     <script>
-        // Start playback after a user click because browsers may block autoplay.
-        const startButton = document.getElementById('startVideo');
-        const watchPlayer = document.getElementById('watchPlayer');
+        const startButton =
+            document.getElementById(
+                'startVideo'
+            );
 
-        startButton.addEventListener('click', function () {
-            watchPlayer.play();
-        });
+        const watchPlayer =
+            document.getElementById(
+                'watchPlayer'
+            );
+
+        const logoutLink =
+            document.getElementById(
+                'logoutLink'
+            );
+
+        const movieId =
+            <%- JSON.stringify(
+                String(movie.id)
+            ) %>;
+
+        const savedResumeTime =
+            <%- JSON.stringify(
+                safeResumeTime
+            ) %>;
+
+        const progressUrl =
+            `/watch/${
+                encodeURIComponent(movieId)
+            }/progress`;
+
+        let lastSavedTime = -5;
+        let resumeApplied = false;
+
+
+        function buildProgressPayload() {
+            if (
+                !Number.isFinite(
+                    watchPlayer.duration
+                ) ||
+                watchPlayer.duration <= 0
+            ) {
+                return null;
+            }
+
+            return {
+                currentTime:
+                    watchPlayer.ended
+                        ? watchPlayer.duration
+                        : watchPlayer.currentTime,
+
+                duration:
+                    watchPlayer.duration
+            };
+        }
+
+
+        function saveProgress(
+            useBeacon = false
+        ) {
+            const payload =
+                buildProgressPayload();
+
+            if (!payload) {
+                return Promise.resolve();
+            }
+
+            const body =
+                JSON.stringify(payload);
+
+            if (
+                useBeacon &&
+                navigator.sendBeacon
+            ) {
+                const blob =
+                    new Blob(
+                        [body],
+                        {
+                            type:
+                                'application/json'
+                        }
+                    );
+
+                navigator.sendBeacon(
+                    progressUrl,
+                    blob
+                );
+
+                return Promise.resolve();
+            }
+
+            return fetch(
+                progressUrl,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body,
+
+                    keepalive: true
+                }
+            ).catch(function (error) {
+                console.error(
+                    'Could not save watch progress:',
+                    error
+                );
+            });
+        }
+
+
+        watchPlayer.addEventListener(
+            'loadedmetadata',
+            function () {
+                if (
+                    resumeApplied ||
+                    savedResumeTime <= 0
+                ) {
+                    return;
+                }
+
+                const latestAllowedTime =
+                    Math.max(
+                        0,
+                        watchPlayer.duration - 1
+                    );
+
+                watchPlayer.currentTime =
+                    Math.min(
+                        savedResumeTime,
+                        latestAllowedTime
+                    );
+
+                lastSavedTime =
+                    watchPlayer.currentTime;
+
+                resumeApplied = true;
+            }
+        );
+
+
+        startButton.addEventListener(
+            'click',
+            function () {
+                if (
+                    watchPlayer.ended ||
+                    (
+                        Number.isFinite(
+                            watchPlayer.duration
+                        ) &&
+                        watchPlayer.currentTime >=
+                        watchPlayer.duration - 1
+                    )
+                ) {
+                    watchPlayer.currentTime = 0;
+                }
+
+                watchPlayer
+                    .play()
+                    .catch(
+                        function (error) {
+                            console.error(
+                                'Playback could not start:',
+                                error
+                            );
+                        }
+                    );
+            }
+        );
+
+
+        watchPlayer.addEventListener(
+            'timeupdate',
+            function () {
+                if (
+                    watchPlayer.currentTime -
+                    lastSavedTime >= 5
+                ) {
+                    lastSavedTime =
+                        watchPlayer.currentTime;
+
+                    saveProgress();
+                }
+            }
+        );
+
+
+        watchPlayer.addEventListener(
+            'pause',
+            function () {
+                if (!watchPlayer.ended) {
+                    saveProgress();
+                }
+            }
+        );
+
+
+        watchPlayer.addEventListener(
+            'ended',
+            function () {
+                saveProgress();
+
+                startButton.textContent =
+                    'Watch Again';
+            }
+        );
+
+
+        window.addEventListener(
+            'pagehide',
+            function () {
+                saveProgress(true);
+            }
+        );
+
+
+        document.addEventListener(
+            'visibilitychange',
+            function () {
+                if (
+                    document.visibilityState ===
+                    'hidden'
+                ) {
+                    saveProgress(true);
+                }
+            }
+        );
+
+
+        logoutLink.addEventListener(
+            'click',
+            async function (event) {
+                event.preventDefault();
+
+                await saveProgress();
+
+                window.location.href =
+                    '/logout';
+            }
+        );
     </script>
+
 </body>
 
 </html>

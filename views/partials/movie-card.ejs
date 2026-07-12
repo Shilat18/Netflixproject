@@ -25,5 +25,9 @@
             <input type="hidden" name="redirectTo" value="<%= typeof returnTo !== 'undefined' ? returnTo : '/homepage' %>">
             <button type="submit"><%= movie.isInMyList ? 'Saved in My List' : 'Add to My List' %></button>
         </form>
+        <form class="card-list-form" action="/content/<%= movie.id %>/like" method="POST">
+            <input type="hidden" name="redirectTo" value="<%= typeof returnTo !== 'undefined' ? returnTo : '/homepage' %>">
+            <button type="submit"> <%= movie.isLiked ? '♥ Unlike' : '♡ Like' %> (<%= movie.likeCount || 0 %>) </button>
+        </form>
     </div>
 </article>
