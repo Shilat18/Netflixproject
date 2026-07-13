@@ -43,10 +43,46 @@
                     Title
                     <input type="text" name="title" required value="<%= formData.title || (editMovie && editMovie.title) || '' %>">
                 </label>
+                
+                <%
+                    const selectedCategory =
+                        formData.category ||
+                        (editMovie && editMovie.category) ||
+                        '';
+                %>
 
                 <label>
                     Category
-                    <input type="text" name="category" required value="<%= formData.category || (editMovie && editMovie.category) || '' %>">
+
+                    <select name="category" required>
+                        <option value="" disabled <%= !selectedCategory ? 'selected' : '' %>>
+                            Choose category
+                        </option>
+
+                        <option value="Thriller" <%= selectedCategory === 'Thriller' ? 'selected' : '' %>>
+                            Thriller
+                        </option>
+
+                        <option value="Sci-Fi" <%= selectedCategory === 'Sci-Fi' ? 'selected' : '' %>>
+                            Sci-Fi
+                        </option>
+
+                        <option value="Fantasy" <%= selectedCategory === 'Fantasy' ? 'selected' : '' %>>
+                            Fantasy
+                        </option>
+
+                        <option value="Drama" <%= selectedCategory === 'Drama' ? 'selected' : '' %>>
+                            Drama
+                        </option>
+
+                        <option value="Comedy" <%= selectedCategory === 'Comedy' ? 'selected' : '' %>>
+                            Comedy
+                        </option>
+
+                        <option value="Romance" <%= selectedCategory === 'Romance' ? 'selected' : '' %>>
+                            Romance
+                        </option>
+                    </select>
                 </label>
 
                 <label>
@@ -62,6 +98,15 @@
                 <label>
                     Image file
                     <input type="text" name="image" required value="<%= formData.image || (editMovie && editMovie.image) || '' %>">
+                </label>
+
+                <label>
+                    Movie URL
+                    <input
+                        type="text"
+                        name="videoUrl"
+                        required
+                        value="<%= formData.videoUrl || (editMovie && editMovie.videoUrl) || '' %>">
                 </label>
 
                 <label>

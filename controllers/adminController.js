@@ -106,7 +106,8 @@ function validateContentInput(body) {
         'category',
         'year',
         'rating',
-        'image'
+        'image',
+        'videoUrl'
     ];
 
     const missingField = requiredFields.find(function (field) {
